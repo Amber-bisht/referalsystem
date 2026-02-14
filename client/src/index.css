@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+:root {
+  --bg-color: #ffffff;
+  --text-color: #000000;
+  --primary-color: #000000;
+  --secondary-color: #333333;
+  --accent-color: #555555;
+  --border-color: #e0e0e0;
+  --error-color: #ff3333;
+  --success-color: #00cc66;
+}
+
+[data-theme='dark'] {
+  --bg-color: #121212;
+  --text-color: #ffffff;
+  --primary-color: #ffffff;
+  --secondary-color: #cccccc;
+  --accent-color: #aaaaaa;
+  --border-color: #333333;
+}
+
+body {
+  @apply bg-white text-black transition-colors duration-300;
+}
+
+.btn {
+  @apply px-4 py-2 rounded font-semibold transition-all duration-200 border border-black;
+}
+
+.btn-primary {
+  @apply bg-black text-white hover:opacity-90;
+}
+
+.btn-outline {
+  @apply bg-transparent text-black hover:bg-black hover:text-white;
+}
+
+.card {
+  @apply p-6 border border-gray-200 rounded-lg bg-white shadow-sm;
+}
+
+.input {
+  @apply w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-black mb-2;
+}
