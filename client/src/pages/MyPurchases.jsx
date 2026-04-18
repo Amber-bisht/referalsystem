@@ -39,7 +39,13 @@ const MyPurchases = () => {
                                     <td className="py-4 px-4 font-medium">{order.productName}</td>
                                     <td className="py-4 px-4 text-right">₹{order.price}</td>
                                     <td className="py-4 px-4 text-center">
-                                        <span className="border border-green-700 text-green-700 text-xs px-3 py-1 font-bold tracking-widest uppercase">Completed</span>
+                                        <span className={`text-[10px] px-3 py-1 font-black tracking-widest uppercase rounded ${
+                                            order.status === 'Shipping Done' ? 'bg-green-100 text-green-700' :
+                                            order.status === 'Shipping Started' ? 'bg-blue-100 text-blue-700' : 
+                                            'bg-gray-100 text-gray-600'
+                                        }`}>
+                                            {order.status || 'Payment Successful'}
+                                        </span>
                                     </td>
                                 </tr>
                             ))}

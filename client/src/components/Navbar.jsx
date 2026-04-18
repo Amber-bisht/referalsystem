@@ -20,7 +20,7 @@ const Navbar = () => {
     return (
         <nav className="border-b border-gray-200 py-4 mb-8 bg-white relative z-50">
             <div className="container mx-auto px-4 flex justify-between items-center">
-                <Link to="/" className="text-xl font-bold tracking-widest uppercase" onClick={closeMenu}>LuxeStream</Link>
+                <Link to="/" className="text-xl font-bold tracking-widest uppercase" onClick={closeMenu}>Referal System</Link>
 
                 {/* Mobile menu button */}
                 <button onClick={toggleMenu} className="md:hidden focus:outline-none">

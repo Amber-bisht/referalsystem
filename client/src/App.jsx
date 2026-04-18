@@ -10,10 +10,19 @@ import Referrals from './pages/Referrals';
 import Landing from './pages/Landing';
 import MyPurchases from './pages/MyPurchases';
 
+import AdminDashboard from './pages/AdminDashboard';
+
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return <div>Loading...</div>;
   if (!user) return <Navigate to="/login" />;
+  return children;
+};
+
+const AdminRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return <div>Loading...</div>;
+  if (!user || user.role !== 'admin') return <Navigate to="/" />;
   return children;
 };
 
@@ -30,6 +39,12 @@ export default () => (
           <ProtectedRoute>
             <Dashboard />
           </ProtectedRoute>
+        } />
+
+        <Route path="/admin" element={
+          <AdminRoute>
+            <AdminDashboard />
+          </AdminRoute>
         } />
 
         <Route path="/profile" element={

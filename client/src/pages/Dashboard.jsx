@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import SuccessModal from '../components/SuccessModal';
 
 const Dashboard = () => {
     const [products, setProducts] = useState([]);
     const [message, setMessage] = useState('');
-    const { refreshUser } = useAuth();
+    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+    const [purchasedProduct, setPurchasedProduct] = useState(null);
+    const { user, refreshUser } = useAuth();
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -22,13 +25,60 @@ const Dashboard = () => {
     const handlePurchase = async (product) => {
         setMessage('');
         try {
-            const res = await axios.post('/shop/purchase', {
+            // 1. Create Order on Backend
+            const orderRes = await axios.post('/payment/create-order', {
                 productId: product._id
             });
-            setMessage(res.data.msg);
-            refreshUser(); // Update stats if anything changed
+
+            const order = orderRes.data;
+
+            // 2. Initialize Razorpay Options
+            const options = {
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+                amount: order.amount,
+                currency: order.currency,
+                name: "Referal System",
+                description: `Purchase ${product.name}`,
+                order_id: order.id,
+                handler: async function (response) {
+                    // 3. Verify Payment on Backend
+                    try {
+                        const verifyRes = await axios.post('/payment/verify', {
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                            productId: product._id
+                        });
+
+                        if (verifyRes.data.success) {
+                            setPurchasedProduct(product);
+                            setIsSuccessModalOpen(true);
+                            refreshUser();
+                        } else {
+                            setMessage('Payment verification failed.');
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        setMessage('Error verifying payment.');
+                    }
+                },
+                prefill: {
+                    name: user?.username || "",
+                    email: user?.email || "",
+                },
+                theme: {
+                    color: "#000000"
+                }
+            };
+
+            const rzp = new window.Razorpay(options);
+            rzp.on('payment.failed', function (response) {
+                setMessage(`Payment failed: ${response.error.description}`);
+            });
+            rzp.open();
+
         } catch (err) {
-            setMessage('Purchase failed');
+            setMessage('Error initializing payment.');
             console.error(err);
         }
     };
@@ -36,7 +86,7 @@ const Dashboard = () => {
     return (
         <div className="container mx-auto px-4">
             <h1 className="text-2xl md:text-3xl font-bold mb-8 uppercase tracking-wide">Accessories Collection</h1>
-            {message && <div className="p-4 mb-4 bg-green-100 border border-green-400 text-green-700 rounded-md">{message}</div>}
+            {message && <div className="p-4 mb-4 bg-red-100 border border-red-400 text-red-700 rounded-md">{message}</div>}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {products.map(product => (
@@ -56,6 +106,12 @@ const Dashboard = () => {
                     </div>
                 ))}
             </div>
+
+            <SuccessModal 
+                isOpen={isSuccessModalOpen} 
+                onClose={() => setIsSuccessModalOpen(false)} 
+                productName={purchasedProduct?.name} 
+            />
         </div>
     );
 };

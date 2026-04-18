@@ -26,15 +26,26 @@ const UserSchema = new mongoose.Schema({
             message: 'Maximum of 8 direct referrals allowed.'
         }
     },
+    role: { type: String, enum: ['user', 'admin'], default: 'user' },
     earnings: {
         direct: { type: Number, default: 0 },
         indirect: { type: Number, default: 0 },
-        total: { type: Number, default: 0 }
+        total: { type: Number, default: 0 },
+        withdrawn: { type: Number, default: 0 }
     },
     purchaseHistory: [{
         productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
         productName: String,
         price: Number,
+        razorpayOrderId: String,
+        razorpayPaymentId: String,
+        status: { type: String, default: 'Payment Successful' },
+        date: { type: Date, default: Date.now }
+    }],
+    withdrawalHistory: [{
+        amount: Number,
+        couponCode: String,
+        brand: String,
         date: { type: Date, default: Date.now }
     }],
     createdAt: { type: Date, default: Date.now }

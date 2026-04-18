@@ -43,9 +43,9 @@ Follow these steps to set up the project locally.
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/MANSIAG1/Referal-Earning-System
-cd Referal-Earning-System
-```
+git clone https://github.com/Amber-bisht/referalsystem
+cd referalsystem
+``` 
 
 ### 2. Backend Setup (Server)
 

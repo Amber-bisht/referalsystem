@@ -64,8 +64,8 @@ Navigate to your desired directory (e.g., `/var/www` or `~/`) and clone your pro
 
 ```bash
 cd ~
-git clone https://github.com/MANSIAG1/Referal-Earning-System
-cd Referal-Earning-System
+git clone https://github.com/Amber-bisht/referalsystem
+cd referalsystem
 ```
 
 ### 2. Backend Setup
