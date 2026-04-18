@@ -3,10 +3,10 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
-const authRoutes = require('../routes/auth');
-const shopRoutes = require('../routes/shop');
-const paymentRoutes = require('../routes/payment');
-const adminRoutes = require('../routes/admin');
+const authRoutes = require('./routes/auth');
+const shopRoutes = require('./routes/shop');
+const paymentRoutes = require('./routes/payment');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
