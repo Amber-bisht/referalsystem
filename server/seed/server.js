@@ -3,17 +3,22 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
-const authRoutes = require('./routes/auth');
-const shopRoutes = require('./routes/shop');
-const paymentRoutes = require('./routes/payment');
-const adminRoutes = require('./routes/admin');
+const authRoutes = require('../routes/auth');
+const shopRoutes = require('../routes/shop');
+const paymentRoutes = require('../routes/payment');
+const adminRoutes = require('../routes/admin');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware 
 app.use(cors({
-    origin: ["https://luxestream.asprin.dev", "https://referal-earning-system.vercel.app", "http://localhost:5173", process.env.FRONTEND_URL],
+    origin: [
+        "http://localhost:5173",
+        "https://api.referral.amberbisht.me",
+        "https://referal.amberbisht.me",
+        process.env.FRONTEND_URL
+    ],
     credentials: true
 }));
 app.use(express.json());
