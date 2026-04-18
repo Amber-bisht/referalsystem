@@ -1,4 +1,9 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+
+if (!process.env.MONGO_URI) {
+    console.warn('WARNING: MONGO_URI is not defined in .env file!');
+}
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
