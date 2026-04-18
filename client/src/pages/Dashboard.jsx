@@ -63,7 +63,7 @@ const Dashboard = () => {
                     }
                 },
                 prefill: {
-                    name: user?.username || "",
+                    name: user?.email || "",
                     email: user?.email || "",
                 },
                 theme: {
@@ -85,27 +85,52 @@ const Dashboard = () => {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold mb-10 text-slate-900">Accessories Collection</h1>
-            {message && <div className="p-4 mb-6 bg-slate-50 border border-slate-200 text-slate-600 rounded-lg text-sm">{message}</div>}
+            <h1 className="text-3xl font-bold mb-10 text-slate-900 tracking-tight">Gift Card Minting Hub</h1>
+            {message && <div className="p-4 mb-6 bg-red-50 border border-red-100 text-red-600 rounded-lg text-sm">{message}</div>}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                 {products.map(product => (
-                    <div key={product._id} className="group border border-slate-100 rounded-2xl overflow-hidden hover:border-slate-300 transition-all">
+                    <div key={product._id} className="group bg-white border border-slate-100 rounded-2xl overflow-hidden hover:border-slate-300 transition-all shadow-sm">
                         {product.imageUrl && (
-                            <div className="overflow-hidden">
-                                <img src={product.imageUrl} alt={product.name} className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500" />
+                            <div className="relative overflow-hidden aspect-[16/10]">
+                                <img src={product.imageUrl} alt={product.name} className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${product.stock <= 0 ? 'grayscale opacity-50' : ''}`} />
+                                {product.stock <= 0 ? (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                                        <span className="px-4 py-2 bg-white text-black font-black text-xs uppercase tracking-widest">Sold Out</span>
+                                    </div>
+                                ) : product.stock <= 5 && (
+                                    <div className="absolute top-4 right-4">
+                                        <span className="px-3 py-1 bg-red-500 text-white font-bold text-[10px] uppercase tracking-wider rounded-full shadow-lg">Only {product.stock} Left</span>
+                                    </div>
+                                )}
                             </div>
                         )}
                         <div className="p-6">
-                            <h3 className="text-lg font-bold text-slate-900">{product.name}</h3>
-                            <p className="text-slate-500 text-sm mt-2 line-clamp-2 h-10">{product.description}</p>
+                            <div className="flex justify-between items-start mb-2">
+                                <h3 className="text-lg font-bold text-slate-900">{product.name}</h3>
+                                <span className="text-[10px] font-black bg-slate-100 px-2 py-0.5 rounded text-slate-500 uppercase tracking-widest italic">Digital Pass</span>
+                            </div>
+                            <p className="text-slate-500 text-sm line-clamp-2 h-10">{product.description}</p>
                             <div className="flex items-center justify-between mt-8">
-                                <span className="text-2xl font-bold text-slate-900">₹{product.price}</span>
+                                <div className="flex flex-col">
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-2xl font-black text-slate-900 leading-none">₹{product.price}</span>
+                                        {product.originalPrice && product.originalPrice > product.price && (
+                                            <span className="text-sm text-slate-400 line-through font-bold">₹{product.originalPrice}</span>
+                                        )}
+                                    </div>
+                                    <span className="text-[10px] text-slate-400 font-bold uppercase mt-1">Instant Delivery</span>
+                                </div>
                                 <button
                                     onClick={() => handlePurchase(product)}
-                                    className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold active:scale-95 transition-all shadow-sm"
+                                    disabled={product.stock <= 0}
+                                    className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-md active:scale-95 ${
+                                        product.stock <= 0 
+                                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
+                                        : 'bg-slate-900 text-white hover:bg-slate-800'
+                                    }`}
                                 >
-                                    Purchase
+                                    {product.stock <= 0 ? 'Out of Stock' : 'Mint Voucher'}
                                 </button>
                             </div>
                         </div>

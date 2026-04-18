@@ -11,29 +11,26 @@ const Landing = () => {
         <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-slate-900 selection:text-white">
             {/* Hero Section */}
             <div className="max-w-7xl mx-auto px-6 pt-4 pb-12 md:pt-6 md:pb-16 text-center">
-                <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8">
-                    Luxury accessories, <br className="hidden md:block" />
-                    <span className="text-slate-400">reimagined for you.</span>
-                </h1>
-                
-                <p className="max-w-2xl mx-auto text-lg md:text-xl text-slate-500 mb-12 leading-relaxed">
-                    A curated collection of premium essentials. Join our exclusive referral network and earn rewards while you shop.
-                </p>
-
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <Link
-                        to="/signup"
-                        className="w-full sm:w-auto px-10 py-4 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-slate-900/10"
-                    >
-                        Join the Network
-                    </Link>
-                    <Link
-                        to="/login"
-                        className="w-full sm:w-auto px-10 py-4 bg-white border border-slate-200 text-slate-900 text-sm font-bold rounded-xl hover:border-slate-900 transition-all"
-                    >
-                        Sign In
-                    </Link>
-                </div>
+                <h1 className="text-5xl md:text-7xl font-bold text-slate-900 tracking-tighter mb-8 leading-[1.1]">
+          The Future of <span className="text-slate-400">Digital Rewards.</span>
+        </h1>
+        <p className="text-lg md:text-xl text-slate-500 mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
+          Access premium gift cards from global brands. Grow your network, earn royalties, and liquidate incentives instantly into your favorite vouchers.
+        </p>
+        <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <Link 
+            to="/dashboard" 
+            className="px-10 py-5 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-200"
+          >
+            Access Gift Card Hub
+          </Link>
+          <Link 
+            to="/signup" 
+            className="px-10 py-5 bg-white text-slate-900 border border-slate-200 rounded-2xl font-bold text-sm hover:border-slate-900 transition-all active:scale-95"
+          >
+            Join the Network
+          </Link>
+        </div>
             </div>
 
             {/* Visual Grid */}

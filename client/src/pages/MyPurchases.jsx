@@ -32,74 +32,58 @@ const MyPurchases = () => {
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-5xl">
-            <h1 className="text-3xl font-bold text-slate-900 mb-10 text-center md:text-left">Order History</h1>
+            <h1 className="text-3xl font-black text-slate-900 mb-10 text-center md:text-left tracking-tighter">Digital Voucher Vault</h1>
 
             {history.length === 0 ? (
-                <div className="text-center py-16 bg-slate-50 border border-slate-100 rounded-3xl">
-                    <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                <div className="text-center py-20 bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl">
+                    <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                        <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4v-3a2 2 0 00-2-2H5z"/></svg>
                     </div>
-                    <p className="text-lg font-bold text-slate-900 mb-2">No orders found</p>
-                    <p className="text-sm text-slate-500 mb-6 font-medium">You haven't purchased any accessories yet.</p>
-                    <Link to="/shop" className="px-8 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold shadow-sm">Explore Shop</Link>
+                    <p className="text-xl font-bold text-slate-900 mb-2">Your vault is empty</p>
+                    <p className="text-sm text-slate-400 mb-8 font-medium">Mint your first gift card to generate a unique voucher code.</p>
+                    <Link to="/dashboard" className="px-10 py-3.5 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all">Go to Minting Hub</Link>
                 </div>
             ) : (
-                <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm">
-                            <thead>
-                                <tr className="bg-slate-50 border-b border-slate-100">
-                                    <th className="py-4 px-6 font-semibold text-slate-500">Item</th>
-                                    <th className="py-4 px-6 font-semibold text-slate-500 hidden md:table-cell">Purchase Date</th>
-                                    <th className="py-4 px-6 font-semibold text-slate-500 text-right">Price</th>
-                                    <th className="py-4 px-6 font-semibold text-slate-500 text-center">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-50">
-                                {history.slice().reverse().map((order, index) => {
-                                    const productImage = getProductImage(order);
-                                    return (
-                                        <tr key={index} className="hover:bg-slate-50/50 transition-colors group">
-                                            <td className="py-5 px-6">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-12 h-12 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0 border border-slate-100">
-                                                        {productImage ? (
-                                                            <img src={productImage} alt={order.productName} className="w-full h-full object-cover" />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-slate-300">
-                                                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <div>
-                                                        <span className="block font-bold text-slate-900 group-hover:text-slate-700 transition-colors">
-                                                            {order.productName}
-                                                        </span>
-                                                        <span className="md:hidden text-[10px] text-slate-400 font-medium">
-                                                            {new Date(order.date).toLocaleDateString()}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="py-5 px-6 text-slate-500 font-medium hidden md:table-cell">
-                                                {new Date(order.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                            </td>
-                                            <td className="py-5 px-6 text-right font-black text-slate-900">₹{order.price}</td>
-                                            <td className="py-5 px-6 text-center">
-                                                <div className={`inline-block px-3 py-1 rounded-none text-[10px] font-bold tracking-wider ${
-                                                    order.status === 'Shipping Done' ? 'bg-emerald-600 text-white' :
-                                                    order.status === 'Shipping Started' ? 'bg-blue-600 text-white' : 
-                                                    'bg-slate-600 text-white'
-                                                }`}>
-                                                    {order.status || 'VERIFIED'}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+                <div className="grid grid-cols-1 gap-6">
+                    {history.slice().reverse().map((order, index) => (
+                        <div key={index} className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row items-center p-6 gap-6">
+                            <div className="w-32 h-20 bg-slate-50 rounded-2xl overflow-hidden flex-shrink-0 border border-slate-100 p-2">
+                                <img src={order.productImage} alt={order.productName} className="w-full h-full object-contain" />
+                            </div>
+                            
+                            <div className="flex-1 text-center md:text-left">
+                                <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Brand Voucher</span>
+                                <h3 className="text-lg font-black text-slate-900 leading-tight">{order.productName}</h3>
+                                <p className="text-xs text-slate-400 mt-1 font-medium italic">Unlocked: {new Date(order.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                            </div>
+
+                            <div className="flex flex-col items-center md:items-end gap-3 bg-slate-50 px-8 py-5 rounded-2xl border border-slate-100 w-full md:w-auto">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Redemption Code</span>
+                                <div className="flex items-center gap-3">
+                                    <span className="font-mono text-xl font-black text-slate-900 selection:bg-slate-900 selection:text-white">
+                                        {order.voucherCode || 'GENERATING...'}
+                                    </span>
+                                    <button 
+                                        onClick={() => {
+                                            if (order.voucherCode) {
+                                                navigator.clipboard.writeText(order.voucherCode);
+                                                alert('Voucher code copied to clipboard!');
+                                            }
+                                        }}
+                                        className="p-2 hover:bg-white rounded-xl transition-colors text-slate-400 hover:text-slate-900 border border-transparent hover:border-slate-100"
+                                        title="Copy to clipboard"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col items-center md:items-end justify-center">
+                                <span className="text-2xl font-black text-slate-900 leading-none">₹{order.price}</span>
+                                <div className="mt-2 text-[9px] font-black bg-emerald-600 text-white px-3 py-1 uppercase tracking-widest italic rounded-full">Liquidated</div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             )}
         </div>

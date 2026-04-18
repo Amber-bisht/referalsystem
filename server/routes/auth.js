@@ -8,7 +8,7 @@ const User = require('../models/User');
 // @desc    Register user
 // @access  Public
 router.post('/signup', async (req, res) => {
-    const { username, email, password, referralCode } = req.body;
+    const { email, password, referralCode } = req.body;
 
     try {
         let user = await User.findOne({ email });
@@ -32,7 +32,6 @@ router.post('/signup', async (req, res) => {
         const newReferralCode = Math.random().toString(36).substring(2, 8).toUpperCase();
 
         user = new User({
-            username,
             email,
             password,
             referralCode: newReferralCode,
@@ -57,7 +56,7 @@ router.post('/signup', async (req, res) => {
 
         jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: 360000 }, (err, token) => {
             if (err) throw err;
-            res.json({ token, user: { id: user.id, username: user.username, email: user.email, referralCode: user.referralCode } });
+            res.json({ token, user: { id: user.id, email: user.email, referralCode: user.referralCode } });
         });
 
     } catch (err) {
@@ -91,7 +90,7 @@ router.post('/login', async (req, res) => {
 
         jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: 360000 }, (err, token) => {
             if (err) throw err;
-            res.json({ token, user: { id: user.id, username: user.username, email: user.email, referralCode: user.referralCode } });
+            res.json({ token, user: { id: user.id, email: user.email, referralCode: user.referralCode } });
         });
 
     } catch (err) {

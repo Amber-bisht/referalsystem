@@ -17,8 +17,8 @@ const Referrals = () => {
             <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm p-8 mb-8">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
                     <div>
-                        <h2 className="text-lg font-bold text-slate-900">Network Slots</h2>
-                        <p className="text-sm text-slate-500">Your direct referral limit for Level 1 earnings.</p>
+                        <h2 className="text-lg font-black text-slate-900 uppercase tracking-tighter">Affiliate Active Slots</h2>
+                        <p className="text-sm text-slate-500 font-medium">Your authorized referral limit for Tier 1 Royalties.</p>
                     </div>
                     <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold uppercase tracking-widest shadow-sm">
                         <span>{currentReferrals}</span>

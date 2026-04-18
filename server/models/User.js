@@ -12,7 +12,6 @@ const mongoose = require('mongoose');
 // createdAa
 
 const UserSchema = new mongoose.Schema({
-    username: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     referralCode: { type: String, unique: true },
@@ -40,6 +39,7 @@ const UserSchema = new mongoose.Schema({
         price: Number,
         razorpayOrderId: String,
         razorpayPaymentId: String,
+        voucherCode: String,
         status: { type: String, default: 'Payment Successful' },
         date: { type: Date, default: Date.now }
     }],

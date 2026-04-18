@@ -6,7 +6,6 @@ const Signup = () => {
     const [searchParams] = useSearchParams();
     const initialRefCode = searchParams.get('ref') || '';
 
-    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [referralCode, setReferralCode] = useState(initialRefCode);
@@ -17,7 +16,7 @@ const Signup = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        const res = await register(username, email, password, referralCode);
+        const res = await register(email, password, referralCode);
         if (res.success) {
             navigate('/');
         } else {
@@ -40,17 +39,6 @@ const Signup = () => {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-1">
-                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Username</label>
-                        <input
-                            type="text"
-                            placeholder="johndoe"
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-900 transition-all text-sm"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                        />
-                    </div>
                     <div className="space-y-1">
                         <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Email address</label>
                         <input

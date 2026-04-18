@@ -23,6 +23,10 @@ router.post('/create-order', auth, async (req, res) => {
             return res.status(404).json({ msg: 'Product not found' });
         }
 
+        if (product.stock <= 0) {
+            return res.status(400).json({ msg: 'This voucher is currently out of stock' });
+        }
+
         const options = {
             amount: product.price * 100, // amount in the smallest currency unit (paise)
             currency: 'INR',
@@ -73,6 +77,9 @@ router.post('/verify', auth, async (req, res) => {
                 return res.status(404).json({ msg: 'User not found' });
             }
 
+            // Generate unique voucher code
+            const voucherCode = `${product.name.substring(0, 3).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+
             // Save Purchase History
             buyer.purchaseHistory.push({
                 productId: product._id,
@@ -80,9 +87,14 @@ router.post('/verify', auth, async (req, res) => {
                 productImage: product.imageUrl,
                 price: product.price,
                 razorpayOrderId: razorpay_order_id,
-                razorpayPaymentId: razorpay_payment_id
+                razorpayPaymentId: razorpay_payment_id,
+                voucherCode
             });
             await buyer.save();
+
+            // Decrement Stock
+            product.stock = Math.max(0, product.stock - 1);
+            await product.save();
 
             // Commission Distribution Logic
             if (product.price > 1000) {

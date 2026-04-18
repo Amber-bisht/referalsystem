@@ -9,29 +9,26 @@ const RedeemModal = ({ isOpen, onClose, currentBalance, onRedeemSuccess }) => {
 
     if (!isOpen) return null;
 
-    const coupons = [
-        {
-            id: 'zepto',
-            name: 'Zepto Voucher',
-            amount: 500,
-            image: 'https://b2cstatic.woohoo.in/media/catalog/product/z/e/zepto.png?appId=12',
-            description: 'Redeem for 500 credits on Zepto'
-        },
-        {
-            id: 'mmt',
-            name: 'MakeMyTrip Voucher',
-            amount: 1000,
-            image: 'https://promos.makemytrip.com/appfest/2x/580x346-BestWishes-2.png',
-            description: 'Redeem for 1000 credits on MMT'
-        }
-    ];
+    const [coupons, setCoupons] = useState([]);
+
+    React.useEffect(() => {
+        const fetchCoupons = async () => {
+            try {
+                const res = await axios.get('/shop/products');
+                setCoupons(res.data);
+            } catch (err) {
+                console.error('Error fetching vouchers:', err);
+            }
+        };
+        if (isOpen) fetchCoupons();
+    }, [isOpen]);
 
     const generateFakeCode = () => {
-        return Math.floor(100000 + Math.random() * 900000).toString();
+        return `GIFT-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
     };
 
     const handleRedeem = async (coupon) => {
-        if (currentBalance < coupon.amount) {
+        if (currentBalance < coupon.price) {
             setError('Insufficient balance for this voucher.');
             return;
         }
@@ -40,7 +37,10 @@ const RedeemModal = ({ isOpen, onClose, currentBalance, onRedeemSuccess }) => {
         setError('');
 
         try {
-            await axios.post('/payment/withdraw', { amount: coupon.amount });
+            await axios.post('/payment/withdraw', { 
+                amount: coupon.price,
+                brand: coupon.name 
+            });
             
             const code = generateFakeCode();
             setGeneratedCode(code);
@@ -75,24 +75,29 @@ const RedeemModal = ({ isOpen, onClose, currentBalance, onRedeemSuccess }) => {
                             <p className="text-2xl font-bold text-slate-900">₹{currentBalance}</p>
                         </div>
 
-                        <div className="space-y-3">
+                        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                             {coupons.map(coupon => (
                                 <button
-                                    key={coupon.id}
+                                    key={coupon._id}
                                     onClick={() => handleRedeem(coupon)}
-                                    disabled={currentBalance < coupon.amount}
+                                    disabled={currentBalance < coupon.price}
                                     className={`w-full group relative flex items-center gap-4 p-4 rounded-xl border transition-all ${
-                                        currentBalance >= coupon.amount 
+                                        currentBalance >= coupon.price 
                                         ? 'border-slate-100 hover:border-slate-900 hover:bg-slate-50' 
                                         : 'opacity-40 grayscale cursor-not-allowed border-slate-50'
                                     }`}
                                 >
                                     <div className="w-16 h-12 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0">
-                                        <img src={coupon.image} alt={coupon.name} className="w-full h-full object-cover" />
+                                        <img src={coupon.imageUrl} alt={coupon.name} className="w-full h-full object-cover" />
                                     </div>
                                     <div className="text-left">
-                                        <h4 className="font-bold text-sm text-slate-900">{coupon.name}</h4>
-                                        <p className="text-[11px] text-slate-500 font-medium">₹{coupon.amount} Credits</p>
+                                        <h4 className="font-bold text-sm text-slate-900 leading-none mb-1">{coupon.name}</h4>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-[11px] text-slate-500 font-medium">₹{coupon.price} Credits</p>
+                                            {coupon.originalPrice && coupon.originalPrice > coupon.price && (
+                                                <span className="text-[10px] text-slate-400 line-through">₹{coupon.originalPrice}</span>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="ml-auto">
                                         <svg className="w-4 h-4 text-slate-300 group-hover:text-slate-900 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/></svg>

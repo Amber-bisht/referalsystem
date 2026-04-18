@@ -24,7 +24,7 @@ router.get('/users', async (req, res) => {
 // @desc    Get all orders across all users
 router.get('/orders', async (req, res) => {
     try {
-        const users = await User.find().select('username email purchaseHistory');
+        const users = await User.find().select('email purchaseHistory');
         let allOrders = [];
         users.forEach(user => {
             user.purchaseHistory.forEach(order => {
@@ -32,7 +32,6 @@ router.get('/orders', async (req, res) => {
                     ...order.toObject(),
                     user: {
                         id: user._id,
-                        username: user.username,
                         email: user.email
                     }
                 });
@@ -74,7 +73,7 @@ router.get('/orders/:userId/:purchaseId', async (req, res) => {
 // @desc    Get all redemption history
 router.get('/withdrawals', async (req, res) => {
     try {
-        const users = await User.find().select('username email withdrawalHistory');
+        const users = await User.find().select('email withdrawalHistory');
         let allWithdrawals = [];
         users.forEach(user => {
             user.withdrawalHistory.forEach(w => {
@@ -82,7 +81,6 @@ router.get('/withdrawals', async (req, res) => {
                     ...w.toObject(),
                     user: {
                         id: user._id,
-                        username: user.username,
                         email: user.email
                     }
                 });
@@ -101,9 +99,9 @@ router.get('/withdrawals', async (req, res) => {
 // @route   POST api/admin/products
 // @desc    Add new product
 router.post('/products', async (req, res) => {
-    const { name, price, profit, description, imageUrl } = req.body;
+    const { name, price, originalPrice, profit, description, imageUrl, stock } = req.body;
     try {
-        const newProduct = new Product({ name, price, profit, description, imageUrl });
+        const newProduct = new Product({ name, price, originalPrice, profit, description, imageUrl, stock: stock || 0 });
         await newProduct.save();
         res.json(newProduct);
     } catch (err) {
@@ -115,11 +113,11 @@ router.post('/products', async (req, res) => {
 // @route   PUT api/admin/products/:id
 // @desc    Update product
 router.put('/products/:id', async (req, res) => {
-    const { name, price, profit, description, imageUrl } = req.body;
+    const { name, price, originalPrice, profit, description, imageUrl, stock } = req.body;
     try {
         const product = await Product.findByIdAndUpdate(
             req.params.id,
-            { $set: { name, price, profit, description, imageUrl } },
+            { $set: { name, price, originalPrice, profit, description, imageUrl, stock: stock || 0 } },
             { new: true }
         );
         res.json(product);

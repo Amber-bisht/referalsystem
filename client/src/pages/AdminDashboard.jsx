@@ -11,7 +11,7 @@ const AdminDashboard = () => {
     });
     const [loading, setLoading] = useState(true);
     const [editingProduct, setEditingProduct] = useState(null);
-    const [newProduct, setNewProduct] = useState({ name: '', price: '', profit: '', description: '', imageUrl: '' });
+    const [newProduct, setNewProduct] = useState({ name: '', price: '', originalPrice: '', profit: '', description: '', imageUrl: '', stock: '' });
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
     useEffect(() => {
@@ -53,7 +53,7 @@ const AdminDashboard = () => {
         e.preventDefault();
         try {
             await axios.post('/admin/products', newProduct);
-            setNewProduct({ name: '', price: '', profit: '', description: '', imageUrl: '' });
+            setNewProduct({ name: '', price: '', originalPrice: '', profit: '', description: '', imageUrl: '', stock: '' });
             fetchData();
         } catch (err) {
             console.error('Error adding product', err);
@@ -92,12 +92,7 @@ const AdminDashboard = () => {
         <div className="flex h-screen bg-white overflow-hidden text-slate-900 font-sans">
             {/* Minimalist Sidebar */}
             <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-slate-50 border-r border-slate-100 transition-all duration-300 flex flex-col`}>
-                <div className="p-6 flex items-center justify-between">
-                    {sidebarOpen && <h1 className="text-lg font-bold tracking-tight">referal.amberbisht.me</h1>}
-                    <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1 hover:bg-slate-200 rounded text-slate-500">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                    </button>
-                </div>
+                <div className="py-8"></div>
 
                 <nav className="flex-1 px-3 py-4 space-y-1">
                     {menuItems.map(item => (
@@ -124,13 +119,6 @@ const AdminDashboard = () => {
 
             {/* Content area */}
             <main className="flex-1 flex flex-col overflow-hidden">
-                <header className="bg-white border-b border-slate-100 p-6 flex justify-between items-center">
-                    <h2 className="text-xl font-bold capitalize">{activeTab}</h2>
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 text-xs font-bold">A</div>
-                        <span className="text-sm font-medium hidden sm:block">Super Admin</span>
-                    </div>
-                </header>
 
                 <div className="flex-1 overflow-y-auto p-8">
                     {loading ? (
@@ -145,7 +133,7 @@ const AdminDashboard = () => {
                                     { label: 'Users', val: data.users.length },
                                     { label: 'Orders', val: data.orders.length },
                                     { label: 'Redemptions', val: data.withdrawals.length },
-                                    { label: 'Products', val: data.products.length }
+                                    { label: 'Voucher Hub', val: data.products.length }
                                 ].map((stat, i) => (
                                     <div key={i} className="p-4 rounded-xl bg-slate-50 border border-slate-100">
                                         <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">{stat.label}</p>
@@ -169,8 +157,8 @@ const AdminDashboard = () => {
                                             {data.users.map(u => (
                                                 <tr key={u._id} className="hover:bg-slate-50/50 transition-colors">
                                                     <td className="px-6 py-4">
-                                                        <div className="font-semibold">{u.username}</div>
-                                                        <div className="text-xs text-slate-400">{u.email}</div>
+                                                        <div className="font-semibold">{u.email}</div>
+                                                        <div className="text-xs text-slate-400 capitalize">{u.role}</div>
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <div className="text-green-600 font-medium">₹{u.earnings?.total || 0} Total</div>
@@ -199,27 +187,19 @@ const AdminDashboard = () => {
                                                 <th className="px-6 py-3 font-semibold">Customer</th>
                                                 <th className="px-6 py-3 font-semibold">Product</th>
                                                 <th className="px-6 py-3 font-semibold">Status</th>
-                                                <th className="px-6 py-3 font-semibold text-center">Action</th>
+                                                <th className="px-6 py-3 font-semibold">Status</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-50">
                                             {data.orders.map(o => (
                                                 <tr key={o._id} className="hover:bg-slate-50/50 transition-colors">
                                                     <td className="px-6 py-4 text-slate-500 text-xs font-mono">{o.razorpayOrderId?.slice(-8)}</td>
-                                                    <td className="px-6 py-4 font-medium">{o.user.username}</td>
+                                                    <td className="px-6 py-4 font-medium">{o.user.email}</td>
                                                     <td className="px-6 py-4 font-bold text-slate-600">₹{o.price} <span className="text-xs font-normal ml-1">({o.productName})</span></td>
                                                     <td className="px-6 py-4">
-                                                        <span className={`px-2 py-1 rounded-none text-[10px] font-bold uppercase tracking-wider ${
-                                                            o.status === 'Shipping Done' ? 'bg-emerald-600 text-white' : 
-                                                            o.status === 'Shipping Started' ? 'bg-blue-600 text-white' :
-                                                            'bg-slate-800 text-white'
-                                                        }`}>
-                                                            {o.status || 'PAID'}
+                                                        <span className="px-2 py-1 rounded-none text-[10px] font-black bg-emerald-600 text-white uppercase tracking-widest italic">
+                                                            LIQUIDATED
                                                         </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-center space-x-2">
-                                                        <button onClick={() => handleUpdateOrderStatus(o.user.id, o._id, 'Shipping Started')} className="p-1 hover:bg-slate-100 rounded text-blue-500" title="Ship"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></button>
-                                                        <button onClick={() => handleUpdateOrderStatus(o.user.id, o._id, 'Shipping Done')} className="p-1 hover:bg-slate-100 rounded text-green-500" title="Done"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg></button>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -241,7 +221,7 @@ const AdminDashboard = () => {
                                             {data.withdrawals.map((w, i) => (
                                                 <tr key={i} className="hover:bg-slate-50/50 transition-colors">
                                                     <td className="px-6 py-4 font-bold">{w.brand}</td>
-                                                    <td className="px-6 py-4">{w.user.username}</td>
+                                                    <td className="px-6 py-4">{w.user.email}</td>
                                                     <td className="px-6 py-4 font-extrabold text-red-500">₹{w.amount}</td>
                                                     <td className="px-6 py-4 font-mono text-xs text-slate-400 bg-slate-50 underline">{w.couponCode}</td>
                                                 </tr>
@@ -256,12 +236,14 @@ const AdminDashboard = () => {
                                             <form onSubmit={editingProduct ? handleUpdateProduct : handleAddProduct} className="space-y-4">
                                                 <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2 mb-4">{editingProduct ? 'Edit SKU' : 'Add New'}</h3>
                                                 <input placeholder="Name" className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-slate-900" value={editingProduct ? editingProduct.name : newProduct.name} onChange={(e) => editingProduct ? setEditingProduct({...editingProduct, name: e.target.value}) : setNewProduct({...newProduct, name: e.target.value})} required />
-                                                <div className="flex gap-2">
-                                                    <input type="number" placeholder="Price" className="w-1/2 px-3 py-2 text-sm border border-slate-200 rounded-lg" value={editingProduct ? editingProduct.price : newProduct.price} onChange={(e) => editingProduct ? setEditingProduct({...editingProduct, price: e.target.value}) : setNewProduct({...newProduct, price: e.target.value})} required />
-                                                    <input type="number" placeholder="Profit" className="w-1/2 px-3 py-2 text-sm border border-slate-200 rounded-lg" value={editingProduct ? editingProduct.profit : newProduct.profit} onChange={(e) => editingProduct ? setEditingProduct({...editingProduct, profit: e.target.value}) : setNewProduct({...newProduct, profit: e.target.value})} required />
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <input type="number" placeholder="Sale Price" className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg" value={editingProduct ? editingProduct.price : newProduct.price} onChange={(e) => editingProduct ? setEditingProduct({...editingProduct, price: e.target.value}) : setNewProduct({...newProduct, price: e.target.value})} required />
+                                                    <input type="number" placeholder="Original Price (MRP)" className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg" value={editingProduct ? editingProduct.originalPrice : newProduct.originalPrice} onChange={(e) => editingProduct ? setEditingProduct({...editingProduct, originalPrice: e.target.value}) : setNewProduct({...newProduct, originalPrice: e.target.value})} />
                                                 </div>
+                                                <input type="number" placeholder="Profit" className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg" value={editingProduct ? editingProduct.profit : newProduct.profit} onChange={(e) => editingProduct ? setEditingProduct({...editingProduct, profit: e.target.value}) : setNewProduct({...newProduct, profit: e.target.value})} required />
                                                 <input placeholder="Image URL" className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg" value={editingProduct ? editingProduct.imageUrl : newProduct.imageUrl} onChange={(e) => editingProduct ? setEditingProduct({...editingProduct, imageUrl: e.target.value}) : setNewProduct({...newProduct, imageUrl: e.target.value})} />
-                                                <textarea placeholder="Description" className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg h-24" value={editingProduct ? editingProduct.description : newProduct.description} onChange={(e) => editingProduct ? setEditingProduct({...editingProduct, description: e.target.value}) : setNewProduct({...newProduct, description: e.target.value})} />
+                                                <input type="number" placeholder="Inventory Stock" className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg font-bold" value={editingProduct ? editingProduct.stock : newProduct.stock} onChange={(e) => editingProduct ? setEditingProduct({...editingProduct, stock: e.target.value}) : setNewProduct({...newProduct, stock: e.target.value})} required />
+                                                <textarea placeholder="Redemption Instructions" className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg h-24" value={editingProduct ? editingProduct.description : newProduct.description} onChange={(e) => editingProduct ? setEditingProduct({...editingProduct, description: e.target.value}) : setNewProduct({...newProduct, description: e.target.value})} />
                                                 <div className="flex gap-2">
                                                     <button type="submit" className="flex-1 bg-slate-900 text-white py-2 rounded-lg text-sm font-bold">{editingProduct ? 'Update' : 'Save'}</button>
                                                     {editingProduct && <button type="button" onClick={() => setEditingProduct(null)} className="px-3 py-2 bg-slate-100 rounded-lg text-xs font-bold">Cancel</button>}
@@ -273,7 +255,9 @@ const AdminDashboard = () => {
                                                         <img src={p.imageUrl} alt={p.name} className="w-12 h-12 object-cover rounded-lg" />
                                                         <div className="flex-1">
                                                             <div className="text-sm font-bold truncate max-w-[200px]">{p.name}</div>
-                                                            <div className="text-xs text-slate-400">₹{p.price} • ₹{p.profit} Profit</div>
+                                                            <div className="text-xs text-slate-400">
+                                                                ₹{p.price} {p.originalPrice && <span className="line-through opacity-50 ml-1">₹{p.originalPrice}</span>} • ₹{p.profit} Profit • {p.stock} Stock
+                                                            </div>
                                                         </div>
                                                         <div className="flex gap-3">
                                                             <button onClick={() => setEditingProduct(p)} className="text-[10px] font-bold text-slate-400 hover:text-slate-900 uppercase">Edit</button>
