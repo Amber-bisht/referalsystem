@@ -139,11 +139,11 @@ const ProductDetail = () => {
 
             {/* Main Product Hero */}
             <div className="container mx-auto px-6 py-12 max-w-7xl">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
                     
                     {/* Left: Product Visuals */}
-                    <div className="lg:col-span-12 xl:col-span-7 space-y-12">
-                        <div className="relative aspect-[16/10] bg-slate-50 rounded-3xl flex items-center justify-center p-12 overflow-hidden border border-slate-100">
+                    <div className="space-y-8">
+                        <div className="relative aspect-square bg-slate-50 rounded-2xl flex items-center justify-center p-6 md:p-10 overflow-hidden border border-slate-100">
                             {product.imageUrl ? (
                                 <img 
                                     src={product.imageUrl} 
@@ -152,7 +152,7 @@ const ProductDetail = () => {
                                 />
                             ) : (
                                 <div className="text-slate-200">
-                                    <svg className="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    <svg className="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                 </div>
                             )}
                             
@@ -165,7 +165,7 @@ const ProductDetail = () => {
                     </div>
 
                     {/* Right: Purchase Sidebar */}
-                    <div className="lg:col-span-12 xl:col-span-5 space-y-8">
+                    <div className="space-y-8">
                         <div className="space-y-4">
                             <div className="flex items-center gap-3">
                                 <span className="px-2 py-1 bg-slate-50 border border-slate-100 text-slate-400 text-[10px] font-bold uppercase tracking-widest rounded-md">
@@ -207,10 +207,6 @@ const ProductDetail = () => {
                             >
                                 {product.stock <= 0 ? 'Out of Stock' : 'Confirm Purchase'}
                             </button>
-                            <div className="flex items-center justify-center gap-2">
-                                <svg className="w-3 h-3 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"/></svg>
-                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-center">Secure checkout via Razorpay</span>
-                            </div>
                         </div>
 
                         {/* Quick Trust Badges */}
