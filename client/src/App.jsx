@@ -9,6 +9,7 @@ import Earnings from './pages/Earnings';
 import Referrals from './pages/Referrals';
 import Landing from './pages/Landing';
 import MyPurchases from './pages/MyPurchases';
+import ProductDetail from './pages/ProductDetail';
 
 import AdminDashboard from './pages/AdminDashboard';
 
@@ -31,50 +32,37 @@ export default () => (
     <AuthProvider>
       <Navbar />
       <Routes>
-        <Route path="/" element={<Landing />} />
+        <Route path="/" element={<Dashboard />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-
-        <Route path="/shop" element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } />
-
         <Route path="/admin" element={
           <AdminRoute>
             <AdminDashboard />
           </AdminRoute>
         } />
-        <Route path="/admin/dashboard" element={
-          <AdminRoute>
-            <AdminDashboard />
-          </AdminRoute>
-        } />
-
         <Route path="/profile" element={
           <ProtectedRoute>
             <Profile />
           </ProtectedRoute>
         } />
-
         <Route path="/earnings" element={
           <ProtectedRoute>
             <Earnings />
           </ProtectedRoute>
         } />
-
         <Route path="/referrals" element={
           <ProtectedRoute>
             <Referrals />
           </ProtectedRoute>
         } />
-
         <Route path="/my-purchases" element={
           <ProtectedRoute>
             <MyPurchases />
           </ProtectedRoute>
         } />
+
+        {/* Global slug handler - must be last */}
+        <Route path="/:id" element={<ProductDetail />} />
       </Routes>
     </AuthProvider>
   </BrowserRouter>

@@ -6,101 +6,100 @@ const Earnings = () => {
     const { user, refreshUser } = useAuth();
     const [isRedeemOpen, setIsRedeemOpen] = useState(false);
 
-    if (!user) return <div className="p-8 text-xs font-mono text-slate-400">LOADING EARNINGS...</div>;
+    if (!user) return <div className="p-8 text-center text-slate-500 font-medium animate-pulse">Loading earnings data...</div>;
 
     const currentBalance = (user.earnings?.total || 0) - (user.earnings?.withdrawn || 0);
 
     return (
-        <div className="max-w-6xl mx-auto px-6 py-12 pb-24 font-sans text-slate-900">
-            {/* Header / Actions */}
-            <div className="flex flex-col sm:flex-row justify-between items-end gap-6 mb-16 border-b border-slate-100 pb-8">
-                <div>
-                    <h1 className="text-xs font-bold tracking-[0.3em] text-slate-400 uppercase mb-2">Earnings Dashboard</h1>
-                    <p className="text-2xl font-light tracking-tight text-slate-900">My Earnings</p>
-                </div>
+        <div className="container mx-auto px-4 py-8 max-w-5xl">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
+                <h1 className="text-3xl font-bold text-slate-900">Earnings Dashboard</h1>
                 <button
                     onClick={() => setIsRedeemOpen(true)}
-                    className="bg-slate-900 text-white px-6 py-2.5 rounded-sm text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-slate-800 transition-all active:scale-[0.98] shadow-sm"
+                    className="w-full sm:w-auto px-8 py-3 bg-slate-900 text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-slate-800 transition-all shadow-md active:scale-95"
                 >
                     Withdraw Balance
                 </button>
             </div>
 
-            {/* Core Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border border-slate-100 rounded-sm mb-16 overflow-hidden">
-                <div className="p-8 border-b md:border-b-0 md:border-r border-slate-100 bg-slate-50/30">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-6">Available Balance</p>
-                    <p className="text-3xl font-mono font-medium tracking-tighter">₹{currentBalance.toLocaleString('en-IN')}</p>
-                    <div className="mt-8 pt-6 border-t border-slate-100/50">
-                        <p className="text-[10px] text-slate-500 font-medium">Total Earned: <span className="font-mono ml-2 text-slate-900">₹{user.earnings?.total || 0}</span></p>
+            {/* Main Balance Card */}
+            <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm p-8 mb-8">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                    <div>
+                        <h2 className="text-lg font-black text-slate-900 uppercase tracking-tighter">Available Balance</h2>
+                        <p className="text-sm text-slate-500 font-medium">Your settled earnings available for immediate withdrawal.</p>
+                    </div>
+                    <div className="flex items-center gap-2 px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl">
+                        <span className="text-slate-400 font-bold text-xl">₹</span>
+                        <span className="text-3xl font-black text-slate-900 tracking-tight">{currentBalance.toLocaleString('en-IN')}</span>
                     </div>
                 </div>
-                
-                <div className="p-8 border-b md:border-b-0 md:border-r border-slate-100">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-6">Direct Referrals</p>
-                    <p className="text-xl font-mono font-medium">₹{user.earnings?.direct || 0}</p>
-                    <span className="text-[9px] font-medium text-slate-400 mt-2 block uppercase tracking-wider">Level 1 Earnings (5%)</span>
-                </div>
 
-                <div className="p-8">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-6">Network Referrals</p>
-                    <p className="text-xl font-mono font-medium">₹{user.earnings?.indirect || 0}</p>
-                    <span className="text-[9px] font-medium text-slate-400 mt-2 block uppercase tracking-wider">Level 2 Earnings (1%)</span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-8 border-t border-slate-50">
+                    <div className="p-6 bg-slate-50/50 rounded-xl border border-slate-100">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Earned</p>
+                        <p className="text-xl font-bold text-slate-900">₹{(user.earnings?.total || 0).toLocaleString()}</p>
+                    </div>
+                    <div className="p-6 bg-slate-50/50 rounded-xl border border-slate-100">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Direct Referrals</p>
+                        <p className="text-xl font-bold text-slate-900">₹{(user.earnings?.direct || 0).toLocaleString()}</p>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-2 block italic">Level 1 (5%)</span>
+                    </div>
+                    <div className="p-6 bg-slate-50/50 rounded-xl border border-slate-100">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Network Referrals</p>
+                        <p className="text-xl font-bold text-slate-900">₹{(user.earnings?.indirect || 0).toLocaleString()}</p>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-2 block italic">Level 2 (1%)</span>
+                    </div>
                 </div>
             </div>
 
-            {/* Ledger Section */}
-            <div className="space-y-12">
-                <section>
-                    <div className="flex items-center gap-4 mb-8">
-                        <h2 className="text-[10px] font-bold text-slate-900 uppercase tracking-[0.2em]">Withdrawal History</h2>
-                        <div className="h-[1px] flex-1 bg-slate-100"></div>
+            {/* History Section */}
+            <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
+                <div className="p-8 border-b border-slate-50">
+                    <h2 className="text-lg font-bold text-slate-900 tracking-tight">Withdrawal History</h2>
+                    <p className="text-sm text-slate-500 font-medium">Log of all reward redemptions and asset liquidations.</p>
+                </div>
+                
+                {user.withdrawalHistory?.length === 0 ? (
+                    <div className="py-20 text-center">
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em]">No withdrawals recorded yet</p>
                     </div>
-                    
-                    {user.withdrawalHistory?.length === 0 ? (
-                        <div className="py-16 border border-slate-100 border-dashed rounded-sm text-center bg-slate-50/20">
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em]">No withdrawals recorded yet</p>
-                        </div>
-                    ) : (
-                        <div className="border border-slate-100 rounded-sm overflow-hidden">
-                            <table className="w-full text-left bg-white">
-                                <thead className="bg-slate-50/50 border-b border-slate-100">
-                                    <tr>
-                                        <th className="px-6 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Date</th>
-                                        <th className="px-6 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Reward Brand</th>
-                                        <th className="px-6 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Reference Code</th>
-                                        <th className="px-6 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-right">Amount</th>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="bg-slate-50/50">
+                                    <th className="px-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Date</th>
+                                    <th className="px-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Reward Brand</th>
+                                    <th className="px-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Reference Code</th>
+                                    <th className="px-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-right">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50">
+                                {user.withdrawalHistory.slice().reverse().map((w, index) => (
+                                    <tr key={index} className="hover:bg-slate-50/50 transition-colors group">
+                                        <td className="px-8 py-5 text-xs font-medium text-slate-500">
+                                            {new Date(w.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                        </td>
+                                        <td className="px-8 py-5">
+                                            <span className="text-xs font-bold text-slate-900 uppercase tracking-wide">{w.brand}</span>
+                                        </td>
+                                        <td className="px-8 py-5">
+                                            <div className="flex justify-center">
+                                                <span className="font-mono text-[10px] bg-slate-50 px-3 py-1 rounded-lg border border-slate-100 text-slate-400 group-hover:text-slate-900 transition-colors tracking-wider">
+                                                    {w.couponCode}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-5 text-right">
+                                            <span className="font-bold text-sm text-slate-900">₹{w.amount.toLocaleString()}</span>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-50">
-                                    {user.withdrawalHistory.slice().reverse().map((w, index) => (
-                                        <tr key={index} className="hover:bg-slate-50 transition-colors group">
-                                            <td className="px-6 py-5 text-[10px] font-mono text-slate-400">
-                                                {new Date(w.date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }).replace(/\//g, '.')}
-                                            </td>
-                                            <td className="px-6 py-5">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-200"></div>
-                                                    <span className="text-[11px] font-medium text-slate-700 uppercase tracking-wider">{w.brand}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-5">
-                                                <div className="flex justify-center">
-                                                    <span className="font-mono text-[10px] bg-slate-50 px-3 py-1 rounded-sm border border-slate-100 text-slate-500 group-hover:text-slate-900 transition-colors">
-                                                        {w.couponCode}
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-5 text-right">
-                                                <span className="font-mono text-xs font-medium text-slate-900">-₹{w.amount.toLocaleString()}</span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </section>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
 
             <RedeemModal 

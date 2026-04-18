@@ -4,6 +4,8 @@ const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const User = require('../models/User');
 const Product = require('../models/Product');
+const Category = require('../models/Category');
+const Banner = require('../models/Banner');
 
 // Apply auth and admin middleware to all routes in this file
 router.use(auth, admin);
@@ -94,14 +96,115 @@ router.get('/withdrawals', async (req, res) => {
     }
 });
 
+// Category Management
+
+// @route   GET api/admin/categories
+// @desc    Get all categories
+router.get('/categories', async (req, res) => {
+    try {
+        const categories = await Category.find().sort({ name: 1 });
+        res.json(categories);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   POST api/admin/categories
+// @desc    Add new category
+router.post('/categories', async (req, res) => {
+    const { name } = req.body;
+    try {
+        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const newCategory = new Category({ name, slug });
+        await newCategory.save();
+        res.json(newCategory);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   DELETE api/admin/categories/:id
+// @desc    Delete category
+router.delete('/categories/:id', async (req, res) => {
+    try {
+        await Category.findByIdAndDelete(req.params.id);
+        res.json({ msg: 'Category removed' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// Banner Management
+
+// @route   GET api/admin/banners
+// @desc    Get all banners
+router.get('/banners', async (req, res) => {
+    try {
+        const banners = await Banner.find().sort({ createdAt: -1 });
+        res.json(banners);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   POST api/admin/banners
+// @desc    Add new banner
+router.post('/banners', async (req, res) => {
+    const { title, description, imageUrl, productSlug, isActive } = req.body;
+    try {
+        const newBanner = new Banner({ title, description, imageUrl, productSlug, isActive });
+        await newBanner.save();
+        res.json(newBanner);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   PUT api/admin/banners/:id
+// @desc    Update banner
+router.put('/banners/:id', async (req, res) => {
+    const { title, description, imageUrl, productSlug, isActive } = req.body;
+    try {
+        const banner = await Banner.findByIdAndUpdate(
+            req.params.id,
+            { $set: { title, description, imageUrl, productSlug, isActive } },
+            { new: true }
+        );
+        res.json(banner);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   DELETE api/admin/banners/:id
+// @desc    Delete banner
+router.delete('/banners/:id', async (req, res) => {
+    try {
+        await Banner.findByIdAndDelete(req.params.id);
+        res.json({ msg: 'Banner removed' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
 // Product Management
 
 // @route   POST api/admin/products
 // @desc    Add new product
 router.post('/products', async (req, res) => {
-    const { name, price, originalPrice, profit, description, imageUrl, stock } = req.body;
+    let { name, slug, price, originalPrice, profit, description, imageUrl, stock, category } = req.body;
     try {
-        const newProduct = new Product({ name, price, originalPrice, profit, description, imageUrl, stock: stock || 0 });
+        if (!slug || slug.trim() === "") {
+            slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        }
+        const newProduct = new Product({ name, slug, price, originalPrice, profit, description, imageUrl, stock: stock || 0, category });
         await newProduct.save();
         res.json(newProduct);
     } catch (err) {
@@ -113,11 +216,14 @@ router.post('/products', async (req, res) => {
 // @route   PUT api/admin/products/:id
 // @desc    Update product
 router.put('/products/:id', async (req, res) => {
-    const { name, price, originalPrice, profit, description, imageUrl, stock } = req.body;
+    let { name, slug, price, originalPrice, profit, description, imageUrl, stock, category } = req.body;
     try {
+        if (!slug || slug.trim() === "") {
+            slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        }
         const product = await Product.findByIdAndUpdate(
             req.params.id,
-            { $set: { name, price, originalPrice, profit, description, imageUrl, stock: stock || 0 } },
+            { $set: { name, slug, price, originalPrice, profit, description, imageUrl, stock: stock || 0, category } },
             { new: true }
         );
         res.json(product);

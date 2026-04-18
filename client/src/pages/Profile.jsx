@@ -13,54 +13,52 @@ const Profile = () => {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-2xl text-slate-900">
-            <h1 className="text-3xl font-bold mb-10">Account Settings</h1>
+        <div className="container mx-auto px-4 py-8 max-w-2xl">
+            <h1 className="text-3xl font-bold text-slate-900 mb-10">Account Settings</h1>
 
-            <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden p-8 mb-8 space-y-8">
-                {/* Identity Cluster */}
+            <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden p-8 mb-8 space-y-10">
+                {/* Identity Section */}
                 <div className="space-y-6">
-                    <div className="flex flex-col sm:flex-row justify-between pb-6 border-b border-slate-50 gap-1">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Rewards Profile</span>
-                        <span className="text-sm font-bold break-all font-mono tracking-tight text-slate-900">{user.email}</span>
+                    <div className="flex flex-col sm:flex-row justify-between pb-6 border-b border-slate-50 gap-2 font-sans tracking-tight">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest self-start pt-1">Email Address</span>
+                        <span className="text-sm font-bold text-slate-900 break-all">{user.email}</span>
                     </div>
-                    <div className="flex flex-col sm:flex-row justify-between pb-6 border-b border-slate-50 gap-1">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Wallet ID</span>
-                        <span className="text-xs font-mono font-bold text-slate-500 bg-slate-50 px-3 py-1 rounded-lg border border-slate-100">
-                            0x{user._id.toString().substring(0, 10).toUpperCase()}{user.referralCode}3D9
-                        </span>
-                    </div>
-                    <div className="flex flex-col sm:flex-row justify-between pb-6 border-b border-slate-50 gap-1">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Collected Royalties</span>
-                        <span className="text-2xl font-black text-slate-900 leading-none tracking-tight">
-                            ₹{user.earnings?.total || 0}
-                            <span className="ml-2 text-[9px] font-black bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded uppercase tracking-widest italic">Verified</span>
-                        </span>
+                    
+
+
+                    <div className="flex flex-col sm:flex-row justify-between pb-6 border-b border-slate-50 gap-2">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest self-start pt-1">Total Earnings</span>
+                        <div className="flex items-center gap-3">
+                            <span className="text-2xl font-black text-slate-900">
+                                ₹{(user.earnings?.total || 0).toLocaleString()}
+                            </span>
+                        </div>
                     </div>
                 </div>
 
-                {/* Referral Section */}
+                {/* Referral Assets */}
                 <div className="bg-slate-50 rounded-2xl p-8 border border-slate-100">
-                    <div className="mb-6">
-                        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">Referal Code</h3>
-                        <div className="bg-white px-2 py-4 rounded-xl border border-slate-100 text-center">
-                            <span className="text-4xl font-mono font-bold tracking-[0.2em] text-slate-900 uppercase">
+                    <div className="mb-8">
+                        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Your Referral Code</h3>
+                        <div className="bg-white py-5 rounded-2xl border border-slate-100 text-center shadow-sm">
+                            <span className="text-4xl font-mono font-black tracking-[0.2em] text-slate-900 uppercase">
                                 {user.referralCode}
                             </span>
                         </div>
                     </div>
 
-                    <div>
-                        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Referal Link</h3>
+                    <div className="space-y-4">
+                        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Share Referral Link</h3>
                         <div className="flex flex-col sm:flex-row gap-2">
                             <input
                                 type="text"
                                 readOnly
                                 value={referralLink}
-                                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none"
+                                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-600 focus:outline-none"
                             />
                             <button
                                 onClick={copyToClipboard}
-                                className="px-6 py-3 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-all active:scale-95 shadow-sm whitespace-nowrap"
+                                className="px-8 py-3 bg-slate-900 text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95 shadow-md whitespace-nowrap"
                             >
                                 Copy Link
                             </button>

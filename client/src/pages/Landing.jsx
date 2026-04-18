@@ -5,7 +5,7 @@ const Landing = () => {
     const { user, loading } = useAuth();
 
     if (loading) return <div className="min-h-screen flex items-center justify-center bg-white"><div className="w-8 h-8 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div></div>;
-    if (user) return <Navigate to="/shop" />;
+    if (user) return <Navigate to="/" />;
 
     return (
         <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-slate-900 selection:text-white">

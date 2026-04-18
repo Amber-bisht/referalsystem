@@ -18,7 +18,7 @@ const Navbar = () => {
     const closeMenu = () => setIsOpen(false);
 
     return (
-        <nav className="bg-white border-b border-slate-100 py-4 mb-8 sticky top-0 z-50">
+        <nav className="bg-white border-b border-slate-100 py-4 sticky top-0 z-50">
             <div className="container mx-auto px-4 flex justify-between items-center">
                 <Link to="/" className="text-xl font-bold text-slate-900 tracking-tight" onClick={closeMenu}>
                     referal.amberbisht.me
@@ -39,7 +39,7 @@ const Navbar = () => {
                 <div className="hidden md:flex gap-6 items-center">
                     {user ? (
                         <>
-                            <Link to="/shop" className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">Shop</Link>
+                            <Link to="/" className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">Shop</Link>
                             <Link to="/my-purchases" className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">Orders</Link>
                             <Link to="/earnings" className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">Earnings</Link>
                             <Link to="/referrals" className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">Referrals</Link>
@@ -63,7 +63,7 @@ const Navbar = () => {
                 <div className="md:hidden absolute top-full left-0 w-full bg-white border-b border-slate-100 shadow-xl py-6 flex flex-col gap-4 px-6 animate-in slide-in-from-top-4 duration-300">
                     {user ? (
                         <>
-                            <Link to="/shop" className="text-md font-bold text-slate-900" onClick={closeMenu}>Shop</Link>
+                            <Link to="/" className="text-md font-bold text-slate-900" onClick={closeMenu}>Shop</Link>
                             <Link to="/my-purchases" className="text-md font-bold text-slate-900" onClick={closeMenu}>Orders</Link>
                             <Link to="/earnings" className="text-md font-bold text-slate-900" onClick={closeMenu}>Earnings</Link>
                             <Link to="/referrals" className="text-md font-bold text-slate-900" onClick={closeMenu}>Referrals</Link>

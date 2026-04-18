@@ -9,11 +9,13 @@ const mongoose = require('mongoose');
 
 const ProductSchema = new mongoose.Schema({
     name: { type: String, required: true },
+    slug: { type: String, unique: true, sparse: true },
     price: { type: Number, required: true },
     originalPrice: { type: Number },
     profit: { type: Number, required: true },
     description: { type: String },
     imageUrl: { type: String },
+    category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
     stock: { type: Number, default: 0 }
 }, { timestamps: true });
 

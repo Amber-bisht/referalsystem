@@ -1,38 +1,52 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import SuccessModal from '../components/SuccessModal';
+import HeroBanner from '../components/HeroBanner';
 
 const Dashboard = () => {
+    const [banners, setBanners] = useState([]);
     const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [message, setMessage] = useState('');
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [purchasedProduct, setPurchasedProduct] = useState(null);
     const { user, refreshUser } = useAuth();
+    const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchProducts = async () => {
+        const fetchStoreData = async () => {
             try {
-                const res = await axios.get('/shop/products');
-                setProducts(res.data);
+                const [productsRes, bannersRes, categoriesRes] = await Promise.all([
+                    axios.get('/shop/products'),
+                    axios.get('/shop/banners'),
+                    axios.get('/shop/categories')
+                ]);
+                setProducts(productsRes.data);
+                setBanners(bannersRes.data);
+                setCategories(categoriesRes.data);
             } catch (err) {
                 console.error(err);
             }
         };
-        fetchProducts();
+        fetchStoreData();
     }, []);
 
-    const handlePurchase = async (product) => {
+    const handlePurchase = async (e, product) => {
+        e.preventDefault(); // Prevent navigating to detail page when buying
+        if (!user) {
+            navigate('/login');
+            return;
+        }
         setMessage('');
         try {
-            // 1. Create Order on Backend
             const orderRes = await axios.post('/payment/create-order', {
                 productId: product._id
             });
 
             const order = orderRes.data;
 
-            // 2. Initialize Razorpay Options
             const options = {
                 key: import.meta.env.VITE_RAZORPAY_KEY_ID,
                 amount: order.amount,
@@ -41,7 +55,6 @@ const Dashboard = () => {
                 description: `Purchase ${product.name}`,
                 order_id: order.id,
                 handler: async function (response) {
-                    // 3. Verify Payment on Backend
                     try {
                         const verifyRes = await axios.post('/payment/verify', {
                             razorpay_order_id: response.razorpay_order_id,
@@ -67,7 +80,7 @@ const Dashboard = () => {
                     email: user?.email || "",
                 },
                 theme: {
-                    color: "#000000"
+                    color: "#0f172a"
                 }
             };
 
@@ -84,59 +97,171 @@ const Dashboard = () => {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold mb-10 text-slate-900 tracking-tight">Gift Card Minting Hub</h1>
-            {message && <div className="p-4 mb-6 bg-red-50 border border-red-100 text-red-600 rounded-lg text-sm">{message}</div>}
+        <div className="bg-white min-h-screen">
+            <HeroBanner banners={banners} />
+            
+            <div className="container mx-auto px-4 py-8 max-w-7xl">
+                <header className="mb-12">
+                    <h1 className="text-3xl font-bold text-slate-900 mb-2">Gift Card Store</h1>
+                    <p className="text-slate-500 text-sm font-medium">Browse and purchase premium vouchers from leading brands.</p>
+                </header>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                {message && (
+                    <div className="p-4 mb-8 bg-red-50 border border-red-100 text-red-600 rounded-xl text-sm font-medium flex items-center gap-3">
+                        <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        {message}
+                    </div>
+                )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {products.map(product => (
-                    <div key={product._id} className="group bg-white border border-slate-100 rounded-2xl overflow-hidden hover:border-slate-300 transition-all shadow-sm">
-                        {product.imageUrl && (
-                            <div className="relative overflow-hidden aspect-[16/10]">
-                                <img src={product.imageUrl} alt={product.name} className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${product.stock <= 0 ? 'grayscale opacity-50' : ''}`} />
+                    <Link 
+                        to={`/${product.slug || product._id}`} 
+                        key={product._id} 
+                        className="group bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col"
+                    >
+                        {/* Image Container */}
+                        <div className="relative aspect-[16/10] overflow-hidden bg-slate-50 border-b border-slate-50">
+                            {product.imageUrl ? (
+                                <img 
+                                    src={product.imageUrl} 
+                                    alt={product.name} 
+                                    className={`w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500 ${product.stock <= 0 ? 'grayscale opacity-50' : ''}`} 
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                    <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                </div>
+                            )}
+
+                            {/* Badges */}
+                            <div className="absolute top-4 left-4 flex flex-col gap-2 transition-transform group-hover:translate-x-1">
                                 {product.stock <= 0 ? (
-                                    <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                                        <span className="px-4 py-2 bg-white text-black font-black text-xs uppercase tracking-widest">Sold Out</span>
-                                    </div>
+                                    <span className="px-3 py-1 bg-slate-900 text-white text-[9px] font-bold uppercase tracking-widest rounded-lg shadow-sm">Sold Out</span>
                                 ) : product.stock <= 5 && (
-                                    <div className="absolute top-4 right-4">
-                                        <span className="px-3 py-1 bg-red-500 text-white font-bold text-[10px] uppercase tracking-wider rounded-full shadow-lg">Only {product.stock} Left</span>
-                                    </div>
-                                )}
+                                    <span className="px-3 py-1 bg-white border border-slate-100 text-slate-900 text-[9px] font-bold uppercase tracking-widest rounded-lg shadow-sm">Limited Stock</span>
+                                ) }
                             </div>
-                        )}
-                        <div className="p-6">
-                            <div className="flex justify-between items-start mb-2">
-                                <h3 className="text-lg font-bold text-slate-900">{product.name}</h3>
-                                <span className="text-[10px] font-black bg-slate-100 px-2 py-0.5 rounded text-slate-500 uppercase tracking-widest italic">Digital Pass</span>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-6 flex-1 flex flex-col">
+                            <div className="flex justify-between items-start mb-2 gap-2">
+                                <h3 className="text-lg font-bold text-slate-900 tracking-tight leading-tight group-hover:text-slate-700 transition-colors">{product.name}</h3>
+                                <span className="flex-shrink-0 px-2 py-0.5 bg-slate-50 border border-slate-100 text-slate-400 text-[9px] font-bold uppercase tracking-widest rounded-md">Gift Card</span>
                             </div>
-                            <p className="text-slate-500 text-sm line-clamp-2 h-10">{product.description}</p>
-                            <div className="flex items-center justify-between mt-8">
+                            
+                            <p className="text-slate-500 text-xs font-medium leading-relaxed mb-6 line-clamp-2 h-8">
+                                Instant delivery to your email after successful purchase.
+                            </p>
+
+                            <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
                                 <div className="flex flex-col">
                                     <div className="flex items-baseline gap-2">
-                                        <span className="text-2xl font-black text-slate-900 leading-none">₹{product.price}</span>
+                                        <span className="text-2xl font-black text-slate-900 leading-none">₹{product.price.toLocaleString()}</span>
                                         {product.originalPrice && product.originalPrice > product.price && (
-                                            <span className="text-sm text-slate-400 line-through font-bold">₹{product.originalPrice}</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs text-slate-400 line-through font-bold decoration-slate-300">₹{product.originalPrice.toLocaleString()}</span>
+                                                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded shadow-sm">
+                                                    {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+                                                </span>
+                                            </div>
                                         )}
                                     </div>
-                                    <span className="text-[10px] text-slate-400 font-bold uppercase mt-1">Instant Delivery</span>
                                 </div>
+
                                 <button
-                                    onClick={() => handlePurchase(product)}
+                                    onClick={(e) => handlePurchase(e, product)}
                                     disabled={product.stock <= 0}
-                                    className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-md active:scale-95 ${
+                                    className={`px-6 py-3 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all active:scale-95 shadow-md z-10 ${
                                         product.stock <= 0 
-                                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
-                                        : 'bg-slate-900 text-white hover:bg-slate-800'
+                                        ? 'bg-slate-50 text-slate-300 border border-slate-100 cursor-not-allowed shadow-none' 
+                                        : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200'
                                     }`}
                                 >
-                                    {product.stock <= 0 ? 'Out of Stock' : 'Mint Voucher'}
+                                    {product.stock <= 0 ? 'Out of Stock' : 'Buy Now'}
                                 </button>
                             </div>
                         </div>
-                    </div>
+                    </Link>
                 ))}
             </div>
+
+            {/* Category-wise Sections */}
+            {categories.map(category => {
+                const categoryProducts = products.filter(p => 
+                    p.category && (typeof p.category === 'object' ? p.category._id === category._id : p.category === category._id)
+                );
+                
+                if (categoryProducts.length === 0) return null;
+
+                return (
+                    <section key={category._id} className="mt-20">
+                        <div className="flex items-center gap-4 mb-8">
+                            <h2 className="text-2xl font-bold text-slate-900 tracking-tight">{category.name}</h2>
+                            <div className="h-px flex-1 bg-slate-100"></div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {categoryProducts.map(product => (
+                                <Link 
+                                    to={`/${product.slug || product._id}`} 
+                                    key={product._id} 
+                                    className="group bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col"
+                                >
+                                    {/* Image Container */}
+                                    <div className="relative aspect-[16/10] overflow-hidden bg-slate-50 border-b border-slate-50">
+                                        {product.imageUrl ? (
+                                            <img 
+                                                src={product.imageUrl} 
+                                                alt={product.name} 
+                                                className={`w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500 ${product.stock <= 0 ? 'grayscale opacity-50' : ''}`} 
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                            </div>
+                                        )}
+                                        <div className="absolute top-4 left-4 flex flex-col gap-2 transition-transform group-hover:translate-x-1">
+                                            {product.stock <= 0 ? (
+                                                <span className="px-3 py-1 bg-slate-900 text-white text-[9px] font-bold uppercase tracking-widest rounded-lg shadow-sm">Sold Out</span>
+                                            ) : product.stock <= 5 && (
+                                                <span className="px-3 py-1 bg-white border border-slate-100 text-slate-900 text-[9px] font-bold uppercase tracking-widest rounded-lg shadow-sm">Limited Stock</span>
+                                            ) }
+                                        </div>
+                                    </div>
+
+                                    {/* Content */}
+                                    <div className="p-6 flex-1 flex flex-col">
+                                        <div className="flex justify-between items-start mb-2 gap-2">
+                                            <h3 className="text-lg font-bold text-slate-900 tracking-tight leading-tight group-hover:text-slate-700 transition-colors">{product.name}</h3>
+                                            <span className="flex-shrink-0 px-2 py-0.5 bg-slate-50 border border-slate-100 text-slate-400 text-[9px] font-bold uppercase tracking-widest rounded-md">Voucher</span>
+                                        </div>
+                                        <p className="text-slate-500 text-xs font-medium leading-relaxed mb-6 line-clamp-2 h-8">Instant delivery to your email after successful purchase.</p>
+                                        <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
+                                            <div className="flex flex-col">
+                                                <div className="flex items-baseline gap-2">
+                                                    <span className="text-2xl font-black text-slate-900 leading-none">₹{product.price.toLocaleString()}</span>
+                                                    {product.originalPrice && product.originalPrice > product.price && (
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xs text-slate-400 line-through font-bold decoration-slate-300">₹{product.originalPrice.toLocaleString()}</span>
+                                                            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded shadow-sm">
+                                                                {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <button onClick={(e) => handlePurchase(e, product)} disabled={product.stock <= 0} className={`px-6 py-3 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all active:scale-95 shadow-md z-10 ${product.stock <= 0 ? 'bg-slate-50 text-slate-300 border border-slate-100 cursor-not-allowed shadow-none' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200'}`}>{product.stock <= 0 ? 'Empty' : 'Buy Now'}</button>
+                                        </div>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </section>
+                );
+            })}
+        </div>
 
             <SuccessModal 
                 isOpen={isSuccessModalOpen} 
