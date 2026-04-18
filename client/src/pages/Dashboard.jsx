@@ -37,7 +37,7 @@ const Dashboard = () => {
                 key: import.meta.env.VITE_RAZORPAY_KEY_ID,
                 amount: order.amount,
                 currency: order.currency,
-                name: "Referal System",
+                name: "referal.amberbisht.me",
                 description: `Purchase ${product.name}`,
                 order_id: order.id,
                 handler: async function (response) {
@@ -84,25 +84,31 @@ const Dashboard = () => {
     };
 
     return (
-        <div className="container mx-auto px-4">
-            <h1 className="text-2xl md:text-3xl font-bold mb-8 uppercase tracking-wide">Accessories Collection</h1>
-            {message && <div className="p-4 mb-4 bg-red-100 border border-red-400 text-red-700 rounded-md">{message}</div>}
+        <div className="container mx-auto px-4 py-8">
+            <h1 className="text-3xl font-bold mb-10 text-slate-900">Accessories Collection</h1>
+            {message && <div className="p-4 mb-6 bg-slate-50 border border-slate-200 text-slate-600 rounded-lg text-sm">{message}</div>}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                 {products.map(product => (
-                    <div key={product._id} className="card flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
-                        {product.imageUrl && <img src={product.imageUrl} alt={product.name} className="w-full h-48 object-cover mb-4 rounded-md" />}
-                        <div>
-                            <h3 className="text-xl font-semibold">{product.name}</h3>
-                            <p className="text-gray-600 text-sm mt-1">{product.description}</p>
-                            <p className="text-2xl font-bold mt-4">₹{product.price}</p>
+                    <div key={product._id} className="group border border-slate-100 rounded-2xl overflow-hidden hover:border-slate-300 transition-all">
+                        {product.imageUrl && (
+                            <div className="overflow-hidden">
+                                <img src={product.imageUrl} alt={product.name} className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500" />
+                            </div>
+                        )}
+                        <div className="p-6">
+                            <h3 className="text-lg font-bold text-slate-900">{product.name}</h3>
+                            <p className="text-slate-500 text-sm mt-2 line-clamp-2 h-10">{product.description}</p>
+                            <div className="flex items-center justify-between mt-8">
+                                <span className="text-2xl font-bold text-slate-900">₹{product.price}</span>
+                                <button
+                                    onClick={() => handlePurchase(product)}
+                                    className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold active:scale-95 transition-all shadow-sm"
+                                >
+                                    Purchase
+                                </button>
+                            </div>
                         </div>
-                        <button
-                            onClick={() => handlePurchase(product)}
-                            className="btn btn-primary mt-6 w-full"
-                        >
-                            Purchase Now
-                        </button>
                     </div>
                 ))}
             </div>

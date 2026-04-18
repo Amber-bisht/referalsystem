@@ -18,13 +18,15 @@ const Navbar = () => {
     const closeMenu = () => setIsOpen(false);
 
     return (
-        <nav className="border-b border-gray-200 py-4 mb-8 bg-white relative z-50">
+        <nav className="bg-white border-b border-slate-100 py-4 mb-8 sticky top-0 z-50">
             <div className="container mx-auto px-4 flex justify-between items-center">
-                <Link to="/" className="text-xl font-bold tracking-widest uppercase" onClick={closeMenu}>Referal System</Link>
+                <Link to="/" className="text-xl font-bold text-slate-900 tracking-tight" onClick={closeMenu}>
+                    referal.amberbisht.me
+                </Link>
 
                 {/* Mobile menu button */}
-                <button onClick={toggleMenu} className="md:hidden focus:outline-none">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <button onClick={toggleMenu} className="md:hidden text-slate-500 focus:outline-none p-1">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         {isOpen ? (
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         ) : (
@@ -34,20 +36,23 @@ const Navbar = () => {
                 </button>
 
                 {/* Desktop Menu */}
-                <div className="hidden md:flex gap-4 items-center">
+                <div className="hidden md:flex gap-6 items-center">
                     {user ? (
                         <>
-                            <Link to="/shop" className="btn btn-outline text-sm">Shop</Link>
-                            <Link to="/my-purchases" className="btn btn-outline text-sm">Orders</Link>
-                            <Link to="/profile" className="btn btn-outline text-sm">Profile</Link>
-                            <Link to="/earnings" className="btn btn-outline text-sm">Earnings</Link>
-                            <Link to="/referrals" className="btn btn-outline text-sm">Referrals</Link>
-                            <button onClick={handleLogout} className="btn btn-primary text-sm">Logout</button>
+                            <Link to="/shop" className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">Shop</Link>
+                            <Link to="/my-purchases" className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">Orders</Link>
+                            <Link to="/earnings" className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">Earnings</Link>
+                            <Link to="/referrals" className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">Referrals</Link>
+                            <Link to="/profile" className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors mr-2">Profile</Link>
+                            {user.role === 'admin' && (
+                                <Link to="/admin" className="text-xs font-bold text-slate-900 bg-slate-100 px-3 py-1.5 rounded-lg uppercase tracking-wider">Admin</Link>
+                            )}
+                            <button onClick={handleLogout} className="text-sm font-bold text-slate-900 border-l border-slate-200 pl-6 ml-2 hover:text-red-600 transition-colors">Logout</button>
                         </>
                     ) : (
                         <>
-                            <Link to="/login" className="btn btn-outline text-sm">Login</Link>
-                            <Link to="/signup" className="btn btn-primary text-sm">Sign Up</Link>
+                            <Link to="/login" className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">Login</Link>
+                            <Link to="/signup" className="px-5 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-all active:scale-95 shadow-sm">Sign Up</Link>
                         </>
                     )}
                 </div>
@@ -55,20 +60,21 @@ const Navbar = () => {
 
             {/* Mobile Menu Dropdown */}
             {isOpen && (
-                <div className="md:hidden absolute top-full left-0 w-full bg-white border-b border-gray-200 shadow-lg py-4 flex flex-col gap-4 px-4">
+                <div className="md:hidden absolute top-full left-0 w-full bg-white border-b border-slate-100 shadow-xl py-6 flex flex-col gap-4 px-6 animate-in slide-in-from-top-4 duration-300">
                     {user ? (
                         <>
-                            <Link to="/shop" className="btn btn-outline text-sm text-center" onClick={closeMenu}>Shop</Link>
-                            <Link to="/my-purchases" className="btn btn-outline text-sm text-center" onClick={closeMenu}>Orders</Link>
-                            <Link to="/profile" className="btn btn-outline text-sm text-center" onClick={closeMenu}>Profile</Link>
-                            <Link to="/earnings" className="btn btn-outline text-sm text-center" onClick={closeMenu}>Earnings</Link>
-                            <Link to="/referrals" className="btn btn-outline text-sm text-center" onClick={closeMenu}>Referrals</Link>
-                            <button onClick={handleLogout} className="btn btn-primary text-sm w-full">Logout</button>
+                            <Link to="/shop" className="text-md font-bold text-slate-900" onClick={closeMenu}>Shop</Link>
+                            <Link to="/my-purchases" className="text-md font-bold text-slate-900" onClick={closeMenu}>Orders</Link>
+                            <Link to="/earnings" className="text-md font-bold text-slate-900" onClick={closeMenu}>Earnings</Link>
+                            <Link to="/referrals" className="text-md font-bold text-slate-900" onClick={closeMenu}>Referrals</Link>
+                            <Link to="/profile" className="text-md font-bold text-slate-900" onClick={closeMenu}>Profile</Link>
+                            <div className="h-px bg-slate-100 my-2"></div>
+                            <button onClick={handleLogout} className="text-md font-bold text-red-600 text-left">Logout</button>
                         </>
                     ) : (
                         <>
-                            <Link to="/login" className="btn btn-outline text-sm text-center" onClick={closeMenu}>Login</Link>
-                            <Link to="/signup" className="btn btn-primary text-sm text-center" onClick={closeMenu}>Sign Up</Link>
+                            <Link to="/login" className="text-md font-bold text-slate-900" onClick={closeMenu}>Login</Link>
+                            <Link to="/signup" className="w-full py-3 bg-slate-900 text-white rounded-xl text-center font-bold" onClick={closeMenu}>Sign Up</Link>
                         </>
                     )}
                 </div>

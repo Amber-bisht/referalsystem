@@ -36,6 +36,7 @@ const UserSchema = new mongoose.Schema({
     purchaseHistory: [{
         productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
         productName: String,
+        productImage: String,
         price: Number,
         razorpayOrderId: String,
         razorpayPaymentId: String,

@@ -77,6 +77,7 @@ router.post('/verify', auth, async (req, res) => {
             buyer.purchaseHistory.push({
                 productId: product._id,
                 productName: product.name,
+                productImage: product.imageUrl,
                 price: product.price,
                 razorpayOrderId: razorpay_order_id,
                 razorpayPaymentId: razorpay_payment_id

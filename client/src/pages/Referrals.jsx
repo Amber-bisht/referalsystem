@@ -1,47 +1,64 @@
 import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 
 const Referrals = () => {
     const { user } = useAuth();
 
-    if (!user) return <div>Loading...</div>;
+    if (!user) return <div className="p-8 text-center text-slate-500 font-medium animate-pulse">Loading referral data...</div>;
 
     const maxReferrals = 8;
     const currentReferrals = user.directReferrals?.length || 0;
     const slots = Array.from({ length: maxReferrals }, (_, i) => i < currentReferrals);
 
     return (
-        <div className="container mx-auto px-4">
-            <h1 className="text-3xl font-bold mb-8 uppercase tracking-wide">Referral Management</h1>
+        <div className="container mx-auto px-4 py-8 max-w-5xl">
+            <h1 className="text-3xl font-bold text-slate-900 mb-10">Referral Network</h1>
 
-            <div className="card p-8 mb-8">
-                <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
-                    <h2 className="text-xl font-bold">Your Network Slots</h2>
-                    <span className="text-lg font-mono font-bold bg-black text-white px-3 py-1 rounded">{currentReferrals} / {maxReferrals} Used</span>
+            <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm p-8 mb-8">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
+                    <div>
+                        <h2 className="text-lg font-bold text-slate-900">Network Slots</h2>
+                        <p className="text-sm text-slate-500">Your direct referral limit for Level 1 earnings.</p>
+                    </div>
+                    <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold uppercase tracking-widest shadow-sm">
+                        <span>{currentReferrals}</span>
+                        <span className="text-slate-500">/</span>
+                        <span>{maxReferrals}</span>
+                        <span className="ml-1 opacity-50">Active</span>
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     {slots.map((isFilled, index) => (
                         <div
                             key={index}
-                            className={`flex flex-col justify-center items-center p-4 md:p-6 rounded-lg border-2 transition-all duration-300
+                            className={`flex flex-col justify-center items-center py-8 rounded-xl border transition-all duration-300
                                 ${isFilled
-                                    ? 'bg-black text-white border-black scale-105 shadow-md'
-                                    : 'bg-white text-gray-300 border-gray-200 border-dashed'}`}
-                            style={{ height: '140px' }}
+                                    ? 'bg-slate-900 text-white border-slate-900 shadow-md ring-4 ring-slate-900/10'
+                                    : 'bg-white text-slate-300 border-slate-100 border-dashed hover:border-slate-200'}`}
                         >
-                            <span className="text-2xl md:text-3xl font-bold mb-1">{index + 1}</span>
-                            <span className="text-[10px] md:text-xs uppercase tracking-widest">{isFilled ? 'Occupied' : 'Empty'}</span>
+                            <span className={`text-3xl font-bold mb-1 ${isFilled ? 'text-white' : 'text-slate-200'}`}>
+                                {index + 1}
+                            </span>
+                            <span className={`text-[10px] font-bold uppercase tracking-widest ${isFilled ? 'text-slate-400' : 'text-slate-300'}`}>
+                                {isFilled ? 'Occupied' : 'Inactive'}
+                            </span>
                         </div>
                     ))}
                 </div>
             </div>
 
-            <div className="card p-8 bg-gray-50 flex justify-between items-center">
+            <div className="bg-slate-50 border border-slate-100 p-8 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-6">
                 <div>
-                    <h3 className="text-lg font-bold mb-1">Grow Your Network</h3>
-                    <p className="text-gray-600">Share your unique code to fill your slots.</p>
+                    <h3 className="text-lg font-bold text-slate-900 mb-1">Invite & Earn</h3>
+                    <p className="text-sm text-slate-500 leading-relaxed">Share your unique referral link to fill your slots and unlock passive commissions.</p>
                 </div>
-                <a href="/profile" className="btn btn-outline">Get Code</a>
+                <Link 
+                    to="/profile" 
+                    className="w-full sm:w-auto px-8 py-3 bg-white border border-slate-200 text-slate-900 text-sm font-bold rounded-xl hover:border-slate-900 transition-all text-center"
+                >
+                    Get Referral Code
+                </Link>
             </div>
         </div>
     );

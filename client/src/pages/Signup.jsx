@@ -3,7 +3,6 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 
 const Signup = () => {
-    // Check for referral code in query params
     const [searchParams] = useSearchParams();
     const initialRefCode = searchParams.get('ref') || '';
 
@@ -27,46 +26,73 @@ const Signup = () => {
     };
 
     return (
-        <div className="min-h-screen flex justify-center items-center">
-            <div className="card" style={{ width: '100%', maxWidth: '400px' }}>
-                <h2 className="text-2xl text-center mb-4">Sign Up</h2>
-                {error && <div style={{ color: 'var(--error-color)', marginBottom: '1rem' }}>{error}</div>}
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                    <input
-                        type="text"
-                        placeholder="Username"
-                        className="input"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-                    />
-                    <input
-                        type="email"
-                        placeholder="Email"
-                        className="input"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        className="input"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                    <input
-                        type="text"
-                        placeholder="Referral Code (Optional)"
-                        className="input"
-                        value={referralCode}
-                        onChange={(e) => setReferralCode(e.target.value)}
-                    />
-                    <button type="submit" className="btn btn-primary">Sign Up</button>
+        <div className="min-h-[80vh] flex justify-center items-center px-4 py-12">
+            <div className="w-full max-w-sm bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
+                <div className="text-center mb-8">
+                    <h2 className="text-2xl font-bold text-slate-900">Create account</h2>
+                    <p className="text-sm text-slate-500 mt-2">Join the referral network today</p>
+                </div>
+
+                {error && (
+                    <div className="p-3 mb-6 bg-red-50 border border-red-100 text-red-600 rounded-lg text-xs font-semibold">
+                        {error}
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Username</label>
+                        <input
+                            type="text"
+                            placeholder="johndoe"
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-900 transition-all text-sm"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Email address</label>
+                        <input
+                            type="email"
+                            placeholder="name@example.com"
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-900 transition-all text-sm"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Password</label>
+                        <input
+                            type="password"
+                            placeholder="••••••••"
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-900 transition-all text-sm"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Referral Code (Optional)</label>
+                        <input
+                            type="text"
+                            placeholder="REF123"
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-900 transition-all text-sm uppercase font-semibold"
+                            value={referralCode}
+                            onChange={(e) => setReferralCode(e.target.value)}
+                        />
+                    </div>
+                    <button 
+                        type="submit" 
+                        className="w-full bg-slate-900 text-white py-3.5 rounded-xl font-bold text-sm hover:bg-slate-800 transition-all active:scale-95 shadow-sm mt-4 pt-4"
+                    >
+                        Sign up
+                    </button>
                 </form>
-                <div className="text-center mt-4 text-sm">
-                    Already have an account? <Link to="/login" className="text-gray">Login</Link>
+
+                <div className="text-center mt-8 text-sm text-slate-500">
+                    Already have an account? <Link to="/login" className="text-slate-900 font-bold hover:underline">Sign in</Link>
                 </div>
             </div>
         </div>

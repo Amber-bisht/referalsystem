@@ -56,78 +56,81 @@ const RedeemModal = ({ isOpen, onClose, currentBalance, onRedeemSuccess }) => {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div 
-                className="absolute inset-0 bg-black/60 backdrop-blur-md"
+                className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
                 onClick={() => status !== 'processing' && onClose()}
             ></div>
 
-            <div className="relative bg-white dark:bg-zinc-900 w-full max-w-lg overflow-hidden rounded-3xl shadow-2xl transition-all">
+            <div className="relative bg-white w-full max-w-md overflow-hidden rounded-2xl shadow-xl transition-all">
                 {status === 'selection' && (
                     <div className="p-8">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-black uppercase italic tracking-tighter">Choose Your Reward</h2>
-                            <button onClick={onClose} className="text-gray-400 hover:text-black">✕</button>
+                            <h2 className="text-xl font-bold text-slate-900">Select Reward</h2>
+                            <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
                         </div>
                         
-                        <p className="text-gray-500 mb-8 font-medium">Available Balance: <span className="text-black dark:text-white font-bold">₹{currentBalance}</span></p>
+                        <div className="mb-8 p-4 bg-slate-50 rounded-xl border border-slate-100 text-center">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Available balance</p>
+                            <p className="text-2xl font-bold text-slate-900">₹{currentBalance}</p>
+                        </div>
 
-                        <div className="grid grid-cols-1 gap-4">
+                        <div className="space-y-3">
                             {coupons.map(coupon => (
                                 <button
                                     key={coupon.id}
                                     onClick={() => handleRedeem(coupon)}
                                     disabled={currentBalance < coupon.amount}
-                                    className={`group relative flex items-center gap-4 p-4 rounded-2xl border-2 transition-all duration-300 ${
+                                    className={`w-full group relative flex items-center gap-4 p-4 rounded-xl border transition-all ${
                                         currentBalance >= coupon.amount 
-                                        ? 'border-gray-100 hover:border-black dark:border-zinc-800' 
-                                        : 'opacity-50 grayscale cursor-not-allowed'
+                                        ? 'border-slate-100 hover:border-slate-900 hover:bg-slate-50' 
+                                        : 'opacity-40 grayscale cursor-not-allowed border-slate-50'
                                     }`}
                                 >
-                                    <img src={coupon.image} alt={coupon.name} className="w-24 h-16 object-cover rounded-lg shadow-sm" />
-                                    <div className="text-left">
-                                        <h4 className="font-bold text-lg">{coupon.name}</h4>
-                                        <p className="text-sm text-gray-500">{coupon.description}</p>
-                                        <p className="mt-1 font-black text-black dark:text-white">COST: ₹{coupon.amount}</p>
+                                    <div className="w-16 h-12 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0">
+                                        <img src={coupon.image} alt={coupon.name} className="w-full h-full object-cover" />
                                     </div>
-                                    <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <div className="bg-black text-white p-2 rounded-full">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                                        </div>
+                                    <div className="text-left">
+                                        <h4 className="font-bold text-sm text-slate-900">{coupon.name}</h4>
+                                        <p className="text-[11px] text-slate-500 font-medium">₹{coupon.amount} Credits</p>
+                                    </div>
+                                    <div className="ml-auto">
+                                        <svg className="w-4 h-4 text-slate-300 group-hover:text-slate-900 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/></svg>
                                     </div>
                                 </button>
                             ))}
                         </div>
                         
-                        {error && <p className="mt-4 text-red-500 text-sm font-bold text-center">{error}</p>}
+                        {error && <p className="mt-4 text-red-500 text-xs font-bold text-center">{error}</p>}
                     </div>
                 )}
 
                 {status === 'processing' && (
                     <div className="p-16 text-center">
-                        <div className="w-16 h-16 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-                        <h3 className="text-xl font-bold uppercase">Processing Redemption...</h3>
+                        <div className="w-8 h-8 border-2 border-slate-900 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+                        <h3 className="text-sm font-bold text-slate-900">Generating Voucher...</h3>
                     </div>
                 )}
 
                 {status === 'success' && (
-                    <div className="p-10 text-center animate-in fade-in zoom-in duration-500">
-                        <div className="mb-8 p-4 bg-black rounded-2xl">
-                            <img src={selectedCoupon.image} alt="Success" className="w-full h-40 object-cover rounded-xl" />
+                    <div className="p-8 text-center animate-in fade-in zoom-in duration-300">
+                        <div className="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"/></svg>
                         </div>
                         
-                        <h2 className="text-3xl font-black uppercase italic italic tracking-tighter mb-2">Redemption Success!</h2>
-                        <p className="text-gray-500 mb-8">Your unique coupon code is generated:</p>
+                        <h2 className="text-xl font-bold text-slate-900 mb-2">Redemption Success</h2>
+                        <p className="text-sm text-slate-500 mb-8">Your {selectedCoupon.name} is ready to use.</p>
                         
-                        <div className="bg-gray-100 dark:bg-zinc-800 p-6 rounded-2xl border-2 border-dashed border-gray-300 mb-8">
-                            <span className="text-4xl font-mono font-black tracking-[0.5em] text-black dark:text-white">{generatedCode}</span>
+                        <div className="bg-slate-50 p-6 rounded-xl border border-slate-100 mb-8">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Your Voucher Code</p>
+                            <span className="text-3xl font-mono font-bold tracking-[0.2em] text-slate-900 uppercase">{generatedCode}</span>
                         </div>
-
-                        <p className="text-xs text-gray-400 mb-8">Use this code at checkout on the {selectedCoupon.id === 'zepto' ? 'Zepto' : 'MakeMyTrip'} platform. <br/> <a href="#" className="underline font-bold">Fake Redemption Link</a></p>
 
                         <button
                             onClick={onClose}
-                            className="w-full bg-black text-white py-4 rounded-xl font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors"
+                            className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-slate-800 transition-all active:scale-95 shadow-sm"
                         >
-                            Back to Earnings
+                            Return to Dashboard
                         </button>
                     </div>
                 )}
