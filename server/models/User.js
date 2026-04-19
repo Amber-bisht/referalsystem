@@ -43,6 +43,14 @@ const UserSchema = new mongoose.Schema({
         status: { type: String, default: 'Payment Successful' },
         date: { type: Date, default: Date.now }
     }],
+    earningHistory: [{
+        amount: Number,
+        fromUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        fromUserEmail: String,
+        productName: String,
+        level: { type: Number, enum: [1, 2] },
+        date: { type: Date, default: Date.now }
+    }],
     withdrawalHistory: [{
         amount: Number,
         couponCode: String,

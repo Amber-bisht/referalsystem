@@ -5,6 +5,7 @@ import RedeemModal from '../components/RedeemModal';
 const Earnings = () => {
     const { user, refreshUser } = useAuth();
     const [isRedeemOpen, setIsRedeemOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState('earnings'); // 'earnings' or 'withdrawals'
 
     if (!user) return <div className="p-8 text-center text-slate-500 font-medium animate-pulse">Loading earnings data...</div>;
 
@@ -23,7 +24,7 @@ const Earnings = () => {
             </div>
 
             {/* Main Balance Card */}
-            <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm p-8 mb-8">
+            <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm p-8 mb-12">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                     <div>
                         <h2 className="text-lg font-black text-slate-900 uppercase tracking-tighter">Available Balance</h2>
@@ -53,52 +54,127 @@ const Earnings = () => {
                 </div>
             </div>
 
-            {/* History Section */}
-            <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
-                <div className="p-8 border-b border-slate-50">
-                    <h2 className="text-lg font-bold text-slate-900 tracking-tight">Withdrawal History</h2>
-                    <p className="text-sm text-slate-500 font-medium">Log of all reward redemptions and asset liquidations.</p>
-                </div>
-                
-                {user.withdrawalHistory?.length === 0 ? (
-                    <div className="py-20 text-center">
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em]">No withdrawals recorded yet</p>
-                    </div>
+            {/* Tab Navigation */}
+            <div className="flex border-b border-slate-100 mb-6 gap-8">
+                <button 
+                    onClick={() => setActiveTab('earnings')}
+                    className={`pb-4 text-xs font-bold uppercase tracking-[0.2em] transition-all relative ${activeTab === 'earnings' ? 'text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
+                >
+                    Earning Logs
+                    {activeTab === 'earnings' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-slate-900 rounded-full"></div>}
+                </button>
+                <button 
+                    onClick={() => setActiveTab('withdrawals')}
+                    className={`pb-4 text-xs font-bold uppercase tracking-[0.2em] transition-all relative ${activeTab === 'withdrawals' ? 'text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
+                >
+                    Redemptions
+                    {activeTab === 'withdrawals' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-slate-900 rounded-full"></div>}
+                </button>
+            </div>
+
+            {/* Content Sections */}
+            <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm min-h-[400px]">
+                {activeTab === 'earnings' ? (
+                    <>
+                        <div className="p-8 border-b border-slate-50">
+                            <h2 className="text-lg font-bold text-slate-900 tracking-tight">Earning History</h2>
+                            <p className="text-sm text-slate-500 font-medium">Detailed breakdown of commissions received from your network.</p>
+                        </div>
+                        
+                        {!user.earningHistory || user.earningHistory.length === 0 ? (
+                            <div className="py-32 text-center">
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em]">No earnings recorded yet</p>
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead>
+                                        <tr className="bg-slate-50/50">
+                                            <th className="px-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Date</th>
+                                            <th className="px-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Source</th>
+                                            <th className="px-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Type</th>
+                                            <th className="px-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Product</th>
+                                            <th className="px-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-right">Commission</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50">
+                                        {user.earningHistory.slice().reverse().map((e, index) => (
+                                            <tr key={index} className="hover:bg-slate-50/50 transition-colors group">
+                                                <td className="px-8 py-5 text-xs font-medium text-slate-500 whitespace-nowrap">
+                                                    {new Date(e.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                </td>
+                                                <td className="px-8 py-5">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-xs font-bold text-slate-900 leading-tight">{e.fromUserEmail}</span>
+                                                        <span className="text-[9px] text-slate-400 font-medium">Purchase Event</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-5">
+                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${e.level === 1 ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
+                                                        {e.level === 1 ? 'Direct' : 'Network'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-8 py-5">
+                                                    <span className="text-xs font-medium text-slate-600 truncate max-w-[150px] inline-block">{e.productName}</span>
+                                                </td>
+                                                <td className="px-8 py-5 text-right">
+                                                    <span className="font-black text-sm text-emerald-600">+₹{e.amount.toLocaleString()}</span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead>
-                                <tr className="bg-slate-50/50">
-                                    <th className="px-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Date</th>
-                                    <th className="px-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Reward Brand</th>
-                                    <th className="px-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Reference Code</th>
-                                    <th className="px-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-right">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-50">
-                                {user.withdrawalHistory.slice().reverse().map((w, index) => (
-                                    <tr key={index} className="hover:bg-slate-50/50 transition-colors group">
-                                        <td className="px-8 py-5 text-xs font-medium text-slate-500">
-                                            {new Date(w.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
-                                        </td>
-                                        <td className="px-8 py-5">
-                                            <span className="text-xs font-bold text-slate-900 uppercase tracking-wide">{w.brand}</span>
-                                        </td>
-                                        <td className="px-8 py-5">
-                                            <div className="flex justify-center">
-                                                <span className="font-mono text-[10px] bg-slate-50 px-3 py-1 rounded-lg border border-slate-100 text-slate-400 group-hover:text-slate-900 transition-colors tracking-wider">
-                                                    {w.couponCode}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-5 text-right">
-                                            <span className="font-bold text-sm text-slate-900">₹{w.amount.toLocaleString()}</span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                    <>
+                        <div className="p-8 border-b border-slate-50">
+                            <h2 className="text-lg font-bold text-slate-900 tracking-tight">Withdrawal History</h2>
+                            <p className="text-sm text-slate-500 font-medium">Log of all reward redemptions and asset liquidations.</p>
+                        </div>
+                        
+                        {!user.withdrawalHistory || user.withdrawalHistory.length === 0 ? (
+                            <div className="py-32 text-center">
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em]">No withdrawals recorded yet</p>
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead>
+                                        <tr className="bg-slate-50/50">
+                                            <th className="px-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Date</th>
+                                            <th className="px-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Reward Brand</th>
+                                            <th className="px-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Reference Code</th>
+                                            <th className="px-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-right">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50">
+                                        {user.withdrawalHistory.slice().reverse().map((w, index) => (
+                                            <tr key={index} className="hover:bg-slate-50/50 transition-colors group">
+                                                <td className="px-8 py-5 text-xs font-medium text-slate-500">
+                                                    {new Date(w.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                </td>
+                                                <td className="px-8 py-5">
+                                                    <span className="text-xs font-bold text-slate-900 uppercase tracking-wide">{w.brand}</span>
+                                                </td>
+                                                <td className="px-8 py-5">
+                                                    <div className="flex justify-center">
+                                                        <span className="font-mono text-[10px] bg-slate-50 px-3 py-1 rounded-lg border border-slate-100 text-slate-400 group-hover:text-slate-900 transition-colors tracking-wider">
+                                                            {w.couponCode}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-5 text-right">
+                                                    <span className="font-bold text-sm text-slate-900">₹{w.amount.toLocaleString()}</span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
 
@@ -111,5 +187,4 @@ const Earnings = () => {
         </div>
     );
 };
-
 export default Earnings;

@@ -127,6 +127,16 @@ router.post('/verify', auth, async (req, res) => {
                 if (level1Parent) {
                     level1Parent.earnings.direct += directEarnings;
                     level1Parent.earnings.total += directEarnings;
+                    
+                    // Record in history
+                    level1Parent.earningHistory.push({
+                        amount: directEarnings,
+                        fromUser: buyer._id,
+                        fromUserEmail: buyer.email,
+                        productName: product.name,
+                        level: 1
+                    });
+
                     await level1Parent.save({ session });
 
                     // Level 2: Parent of Parent
@@ -135,6 +145,16 @@ router.post('/verify', auth, async (req, res) => {
                         if (level2Parent) {
                             level2Parent.earnings.indirect += indirectEarnings;
                             level2Parent.earnings.total += indirectEarnings;
+
+                            // Record in history
+                            level2Parent.earningHistory.push({
+                                amount: indirectEarnings,
+                                fromUser: buyer._id,
+                                fromUserEmail: buyer.email,
+                                productName: product.name,
+                                level: 2
+                            });
+
                             await level2Parent.save({ session });
                         }
                     }
