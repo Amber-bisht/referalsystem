@@ -1,18 +1,36 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-const HeroBanner = ({ banners }) => {
+const HeroBanner = ({ banners, isLoading }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
 
     useEffect(() => {
-        if (!banners || banners.length <= 1) return;
+        if (!banners || banners.length <= 1 || isLoading) return;
 
         const timer = setInterval(() => {
             setCurrentIndex((prev) => (prev + 1) % banners.length);
         }, 5000);
 
         return () => clearInterval(timer);
-    }, [banners]);
+    }, [banners, isLoading]);
+
+    if (isLoading) {
+        return (
+            <div className="relative w-full overflow-hidden bg-slate-50 animate-pulse" style={{ height: 'clamp(300px, 45vh, 500px)' }}>
+                <div className="absolute inset-0 flex items-center">
+                    <div className="container mx-auto px-6 md:px-12 max-w-7xl grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                        <div className="space-y-6">
+                            <div className="h-10 bg-slate-100 rounded-lg w-3/4"></div>
+                            <div className="h-4 bg-slate-100/50 rounded-md w-1/2"></div>
+                        </div>
+                        <div className="hidden md:block">
+                            <div className="aspect-[16/9] bg-slate-100 rounded-3xl w-full"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (!banners || banners.length === 0) return null;
 

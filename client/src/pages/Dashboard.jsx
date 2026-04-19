@@ -9,6 +9,9 @@ const Dashboard = () => {
     const [banners, setBanners] = useState([]);
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [loadingBanners, setLoadingBanners] = useState(true);
+    const [loadingProducts, setLoadingProducts] = useState(true);
+    const [loadingCategories, setLoadingCategories] = useState(true);
     const [message, setMessage] = useState('');
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [purchasedProduct, setPurchasedProduct] = useState(null);
@@ -16,21 +19,42 @@ const Dashboard = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchStoreData = async () => {
+        const fetchBanners = async () => {
             try {
-                const [productsRes, bannersRes, categoriesRes] = await Promise.all([
-                    axios.get('/shop/products'),
-                    axios.get('/shop/banners'),
-                    axios.get('/shop/categories')
-                ]);
-                setProducts(productsRes.data);
-                setBanners(bannersRes.data);
-                setCategories(categoriesRes.data);
+                const res = await axios.get('/shop/banners');
+                setBanners(res.data);
             } catch (err) {
-                console.error(err);
+                console.error('Error fetching banners:', err);
+            } finally {
+                setLoadingBanners(false);
             }
         };
-        fetchStoreData();
+
+        const fetchProducts = async () => {
+            try {
+                const res = await axios.get('/shop/products');
+                setProducts(res.data);
+            } catch (err) {
+                console.error('Error fetching products:', err);
+            } finally {
+                setLoadingProducts(false);
+            }
+        };
+
+        const fetchCategories = async () => {
+            try {
+                const res = await axios.get('/shop/categories');
+                setCategories(res.data);
+            } catch (err) {
+                console.error('Error fetching categories:', err);
+            } finally {
+                setLoadingCategories(false);
+            }
+        };
+
+        fetchBanners();
+        fetchProducts();
+        fetchCategories();
     }, []);
 
     const handlePurchase = async (e, product) => {
@@ -96,9 +120,23 @@ const Dashboard = () => {
         }
     };
 
+    const ProductSkeleton = () => (
+        <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm flex flex-col animate-pulse">
+            <div className="aspect-[16/10] bg-slate-100"></div>
+            <div className="p-6 space-y-4">
+                <div className="h-4 bg-slate-100 rounded w-3/4"></div>
+                <div className="h-3 bg-slate-50 rounded w-full"></div>
+                <div className="pt-6 border-t border-slate-50 flex items-center justify-between">
+                    <div className="h-6 bg-slate-100 rounded w-1/4"></div>
+                    <div className="h-10 bg-slate-100 rounded w-1/3"></div>
+                </div>
+            </div>
+        </div>
+    );
+
     return (
         <div className="bg-white min-h-screen">
-            <HeroBanner banners={banners} />
+            <HeroBanner banners={banners} isLoading={loadingBanners} />
             
             <div className="container mx-auto px-4 py-8 max-w-7xl">
                 <header className="mb-12">
@@ -114,81 +152,92 @@ const Dashboard = () => {
                 )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {products.map(product => (
-                    <Link 
-                        to={`/${product.slug || product._id}`} 
-                        key={product._id} 
-                        className="group bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col"
-                    >
-                        {/* Image Container */}
-                        <div className="relative aspect-[16/10] overflow-hidden bg-slate-50 border-b border-slate-50">
-                            {product.imageUrl ? (
-                                <img 
-                                    src={product.imageUrl} 
-                                    alt={product.name} 
-                                    className={`w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500 ${product.stock <= 0 ? 'grayscale opacity-50' : ''}`} 
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-slate-300">
-                                    <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                </div>
-                            )}
-
-                            {/* Badges */}
-                            <div className="absolute top-4 left-4 flex flex-col gap-2 transition-transform group-hover:translate-x-1">
-                                {product.stock <= 0 ? (
-                                    <span className="px-3 py-1 bg-slate-900 text-white text-[9px] font-bold uppercase tracking-widest rounded-lg shadow-sm">Sold Out</span>
-                                ) : product.stock <= 5 && (
-                                    <span className="px-3 py-1 bg-white border border-slate-100 text-slate-900 text-[9px] font-bold uppercase tracking-widest rounded-lg shadow-sm">Limited Stock</span>
-                                ) }
-                            </div>
-                        </div>
-
-                        {/* Content */}
-                        <div className="p-6 flex-1 flex flex-col">
-                            <div className="flex justify-between items-start mb-2 gap-2">
-                                <h3 className="text-lg font-bold text-slate-900 tracking-tight leading-tight group-hover:text-slate-700 transition-colors">{product.name}</h3>
-                                <span className="flex-shrink-0 px-2 py-0.5 bg-slate-50 border border-slate-100 text-slate-400 text-[9px] font-bold uppercase tracking-widest rounded-md">Gift Card</span>
-                            </div>
-                            
-                            <p className="text-slate-500 text-xs font-medium leading-relaxed mb-6 line-clamp-2 h-8">
-                                Instant delivery to your email after successful purchase.
-                            </p>
-
-                            <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
-                                <div className="flex flex-col">
-                                    <div className="flex items-baseline gap-2">
-                                        <span className="text-2xl font-black text-slate-900 leading-none">₹{product.price.toLocaleString()}</span>
-                                        {product.originalPrice && product.originalPrice > product.price && (
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs text-slate-400 line-through font-bold decoration-slate-300">₹{product.originalPrice.toLocaleString()}</span>
-                                                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded shadow-sm">
-                                                    {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
-                                                </span>
-                                            </div>
-                                        )}
+                {loadingProducts ? (
+                    <>
+                        <ProductSkeleton />
+                        <ProductSkeleton />
+                        <ProductSkeleton />
+                        <ProductSkeleton />
+                        <ProductSkeleton />
+                        <ProductSkeleton />
+                    </>
+                ) : (
+                    products.map(product => (
+                        <Link 
+                            to={`/${product.slug || product._id}`} 
+                            key={product._id} 
+                            className="group bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col"
+                        >
+                            {/* Image Container */}
+                            <div className="relative aspect-[16/10] overflow-hidden bg-slate-50 border-b border-slate-50">
+                                {product.imageUrl ? (
+                                    <img 
+                                        src={product.imageUrl} 
+                                        alt={product.name} 
+                                        className={`w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500 ${product.stock <= 0 ? 'grayscale opacity-50' : ''}`} 
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                        <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                     </div>
-                                </div>
+                                )}
 
-                                <button
-                                    onClick={(e) => handlePurchase(e, product)}
-                                    disabled={product.stock <= 0}
-                                    className={`px-6 py-3 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all active:scale-95 shadow-md z-10 ${
-                                        product.stock <= 0 
-                                        ? 'bg-slate-50 text-slate-300 border border-slate-100 cursor-not-allowed shadow-none' 
-                                        : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200'
-                                    }`}
-                                >
-                                    {product.stock <= 0 ? 'Out of Stock' : 'Buy Now'}
-                                </button>
+                                {/* Badges */}
+                                <div className="absolute top-4 left-4 flex flex-col gap-2 transition-transform group-hover:translate-x-1">
+                                    {product.stock <= 0 ? (
+                                        <span className="px-3 py-1 bg-slate-900 text-white text-[9px] font-bold uppercase tracking-widest rounded-lg shadow-sm">Sold Out</span>
+                                    ) : product.stock <= 5 && (
+                                        <span className="px-3 py-1 bg-white border border-slate-100 text-slate-900 text-[9px] font-bold uppercase tracking-widest rounded-lg shadow-sm">Limited Stock</span>
+                                    ) }
+                                </div>
                             </div>
-                        </div>
-                    </Link>
-                ))}
+
+                            {/* Content */}
+                            <div className="p-6 flex-1 flex flex-col">
+                                <div className="flex justify-between items-start mb-2 gap-2">
+                                    <h3 className="text-lg font-bold text-slate-900 tracking-tight leading-tight group-hover:text-slate-700 transition-colors">{product.name}</h3>
+                                    <span className="flex-shrink-0 px-2 py-0.5 bg-slate-50 border border-slate-100 text-slate-400 text-[9px] font-bold uppercase tracking-widest rounded-md">Gift Card</span>
+                                </div>
+                                
+                                <p className="text-slate-500 text-xs font-medium leading-relaxed mb-6 line-clamp-2 h-8">
+                                    Instant delivery to your email after successful purchase.
+                                </p>
+
+                                <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
+                                    <div className="flex flex-col">
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-2xl font-black text-slate-900 leading-none">₹{product.price.toLocaleString()}</span>
+                                            {product.originalPrice && product.originalPrice > product.price && (
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs text-slate-400 line-through font-bold decoration-slate-300">₹{product.originalPrice.toLocaleString()}</span>
+                                                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded shadow-sm">
+                                                        {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        onClick={(e) => handlePurchase(e, product)}
+                                        disabled={product.stock <= 0}
+                                        className={`px-6 py-3 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all active:scale-95 shadow-md z-10 ${
+                                            product.stock <= 0 
+                                            ? 'bg-slate-50 text-slate-300 border border-slate-100 cursor-not-allowed shadow-none' 
+                                            : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200'
+                                        }`}
+                                    >
+                                        {product.stock <= 0 ? 'Out of Stock' : 'Buy Now'}
+                                    </button>
+                                </div>
+                            </div>
+                        </Link>
+                    ))
+                )}
             </div>
 
             {/* Category-wise Sections */}
-            {categories.map(category => {
+            {!loadingCategories && categories.map(category => {
                 const categoryProducts = products.filter(p => 
                     p.category && (typeof p.category === 'object' ? p.category._id === category._id : p.category === category._id)
                 );
