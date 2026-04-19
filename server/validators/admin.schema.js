@@ -5,7 +5,7 @@ const productSchema = z.object({
   slug: z.string().optional(),
   price: z.number().nonnegative(),
   originalPrice: z.number().nonnegative().optional(),
-  profit: z.number().nonnegative(),
+  commissionPercentage: z.number().min(1, 'Minimum 1%').max(50, 'Maximum 50%'),
   description: z.string().optional(),
   imageUrl: z.string().url('Invalid image URL').optional().or(z.string().length(0)),
   stock: z.number().int().nonnegative(),

@@ -117,25 +117,24 @@ router.post('/verify', auth, async (req, res) => {
         await product.save({ session });
 
         // Commission Distribution Logic
-        if (product.price >= 10) {
-            const { profit } = product;
+        if (product.price >= 10 && product.commissionPercentage > 0) {
+            const directEarnings = product.price * (product.commissionPercentage / 100);
+            const indirectEarnings = directEarnings * 0.10;
 
             // Level 1: Direct Parent
             if (buyer.referredBy) {
                 const level1Parent = await User.findById(buyer.referredBy).session(session);
                 if (level1Parent) {
-                    const level1Earnings = profit * 0.05;
-                    level1Parent.earnings.direct += level1Earnings;
-                    level1Parent.earnings.total += level1Earnings;
+                    level1Parent.earnings.direct += directEarnings;
+                    level1Parent.earnings.total += directEarnings;
                     await level1Parent.save({ session });
 
                     // Level 2: Parent of Parent
                     if (level1Parent.referredBy) {
                         const level2Parent = await User.findById(level1Parent.referredBy).session(session);
                         if (level2Parent) {
-                            const level2Earnings = profit * 0.01;
-                            level2Parent.earnings.indirect += level2Earnings;
-                            level2Parent.earnings.total += level2Earnings;
+                            level2Parent.earnings.indirect += indirectEarnings;
+                            level2Parent.earnings.total += indirectEarnings;
                             await level2Parent.save({ session });
                         }
                     }

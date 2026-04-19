@@ -14,7 +14,7 @@ const AdminDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [editingProduct, setEditingProduct] = useState(null);
     const [editingBanner, setEditingBanner] = useState(null);
-    const [newProduct, setNewProduct] = useState({ name: '', slug: '', price: '', originalPrice: '', profit: '', description: '', imageUrl: '', stock: '', category: '' });
+    const [newProduct, setNewProduct] = useState({ name: '', slug: '', price: '', originalPrice: '', commissionPercentage: 10, description: '', imageUrl: '', stock: '', category: '' });
     const [newCategory, setNewCategory] = useState({ name: '' });
     const [newBanner, setNewBanner] = useState({ title: '', description: '', imageUrl: '', productSlug: '', isActive: true });
     const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -54,7 +54,7 @@ const AdminDashboard = () => {
         e.preventDefault();
         try {
             await axios.post('/admin/products', newProduct);
-            setNewProduct({ name: '', slug: '', price: '', originalPrice: '', profit: '', description: '', imageUrl: '', stock: '', category: '' });
+            setNewProduct({ name: '', slug: '', price: '', originalPrice: '', commissionPercentage: 10, description: '', imageUrl: '', stock: '', category: '' });
             fetchData();
         } catch (err) {
             console.error('Error adding product', err);
@@ -189,7 +189,7 @@ const AdminDashboard = () => {
                                     { label: 'Users', val: data.users.length },
                                     { label: 'Orders', val: data.orders.length },
                                     { label: 'Redemptions', val: data.withdrawals.length },
-                                    { label: 'Voucher Hub', val: data.products.length }
+                                    { label: 'Inventory', val: data.products.length }
                                 ].map((stat, i) => (
                                     <div key={i} className="p-4 rounded-xl bg-slate-50 border border-slate-100">
                                         <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">{stat.label}</p>
@@ -374,7 +374,10 @@ const AdminDashboard = () => {
                                                     <input type="number" placeholder="Sale Price" className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg" value={editingProduct ? editingProduct.price : newProduct.price} onChange={(e) => editingProduct ? setEditingProduct({...editingProduct, price: e.target.value}) : setNewProduct({...newProduct, price: e.target.value})} required />
                                                     <input type="number" placeholder="Original Price (MRP)" className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg" value={editingProduct ? editingProduct.originalPrice : newProduct.originalPrice} onChange={(e) => editingProduct ? setEditingProduct({...editingProduct, originalPrice: e.target.value}) : setNewProduct({...newProduct, originalPrice: e.target.value})} />
                                                 </div>
-                                                <input type="number" placeholder="Profit" className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg" value={editingProduct ? editingProduct.profit : newProduct.profit} onChange={(e) => editingProduct ? setEditingProduct({...editingProduct, profit: e.target.value}) : setNewProduct({...newProduct, profit: e.target.value})} required />
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Commission Rate (%)</label>
+                                                    <input type="number" min="1" max="50" placeholder="Commission % (1-50)" className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg" value={editingProduct ? editingProduct.commissionPercentage : newProduct.commissionPercentage} onChange={(e) => editingProduct ? setEditingProduct({...editingProduct, commissionPercentage: e.target.value}) : setNewProduct({...newProduct, commissionPercentage: e.target.value})} required />
+                                                </div>
                                                 <input placeholder="Image URL" className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg" value={editingProduct ? editingProduct.imageUrl : newProduct.imageUrl} onChange={(e) => editingProduct ? setEditingProduct({...editingProduct, imageUrl: e.target.value}) : setNewProduct({...newProduct, imageUrl: e.target.value})} />
                                                 <input type="number" placeholder="Inventory Stock" className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg font-bold" value={editingProduct ? editingProduct.stock : newProduct.stock} onChange={(e) => editingProduct ? setEditingProduct({...editingProduct, stock: e.target.value}) : setNewProduct({...newProduct, stock: e.target.value})} required />
                                                 <textarea placeholder="Redemption Instructions" className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg h-24" value={editingProduct ? editingProduct.description : newProduct.description} onChange={(e) => editingProduct ? setEditingProduct({...editingProduct, description: e.target.value}) : setNewProduct({...newProduct, description: e.target.value})} />
@@ -390,7 +393,7 @@ const AdminDashboard = () => {
                                                         <div className="flex-1">
                                                             <div className="text-sm font-bold truncate max-w-[200px]">{p.name}</div>
                                                             <div className="text-xs text-slate-400">
-                                                                ₹{p.price} {p.originalPrice && <span className="line-through opacity-50 ml-1">₹{p.originalPrice}</span>} • {data.categories.find(c => c._id === p.category)?.name || 'No Category'}
+                                                                ₹{p.price} {p.originalPrice && <span className="line-through opacity-50 ml-1">₹{p.originalPrice}</span>} • {p.commissionPercentage}% Comm. • {data.categories.find(c => c._id === p.category)?.name || 'No Category'}
                                                             </div>
                                                         </div>
                                                         <div className="flex gap-3">

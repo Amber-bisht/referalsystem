@@ -12,7 +12,7 @@ const ProductSchema = new mongoose.Schema({
     slug: { type: String, unique: true, sparse: true },
     price: { type: Number, required: true },
     originalPrice: { type: Number },
-    profit: { type: Number, required: true },
+    commissionPercentage: { type: Number, required: true, default: 10, min: 1, max: 50 },
     description: { type: String },
     imageUrl: { type: String },
     category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },

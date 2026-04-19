@@ -43,12 +43,12 @@ const Earnings = () => {
                     <div className="p-6 bg-slate-50/50 rounded-xl border border-slate-100">
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Direct Referrals</p>
                         <p className="text-xl font-bold text-slate-900">₹{(user.earnings?.direct || 0).toLocaleString()}</p>
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-2 block italic">Level 1 (5%)</span>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-2 block italic">Level 1 (Direct)</span>
                     </div>
                     <div className="p-6 bg-slate-50/50 rounded-xl border border-slate-100">
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Network Referrals</p>
                         <p className="text-xl font-bold text-slate-900">₹{(user.earnings?.indirect || 0).toLocaleString()}</p>
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-2 block italic">Level 2 (1%)</span>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-2 block italic">Level 2 (Network)</span>
                     </div>
                 </div>
             </div>
