@@ -36,7 +36,7 @@ async function connectToDatabase() {
     if (cachedConnection) {
         return cachedConnection;
     }
-    
+
     if (!MONGO_URI) {
         console.error('CRITICAL: Missing MONGO_URI in environment variables.');
         return;
@@ -64,6 +64,19 @@ app.use(async (req, res, next) => {
 });
 
 // Routes
+app.get('/', (req, res) => {
+    const dbStatus = mongoose.connection.readyState === 1 ? 'CONNECTED' : 'DISCONNECTED';
+    const rzpStatus = (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) ? 'ONLINE' : 'CONFIG ERROR';
+
+    res.json({
+        status: "READY TO ROCK",
+        database: dbStatus,
+        payments: rzpStatus,
+        version: "1.0.0",
+        endpoint: "referral.amberbisht.me"
+    });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/shop', shopRoutes);
 app.use('/api/payment', paymentRoutes);
