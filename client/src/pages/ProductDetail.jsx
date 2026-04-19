@@ -12,36 +12,45 @@ const ProductDetail = () => {
     const [product, setProduct] = useState(null);
     const [relatedProducts, setRelatedProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadingRelated, setLoadingRelated] = useState(true);
     const [error, setError] = useState('');
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchProduct = async () => {
             try {
                 setLoading(true);
-                const [productRes, allProductsRes] = await Promise.all([
-                    axios.get(`/shop/products/${id}`),
-                    axios.get('/shop/products')
-                ]);
+                const res = await axios.get(`/shop/products/${id}`);
+                setProduct(res.data);
                 
-                const currentProduct = productRes.data;
-                setProduct(currentProduct);
-                
-                // Filter related products (same category, excluding current)
-                const related = allProductsRes.data.filter(p => 
-                    p._id !== currentProduct._id && 
-                    p.category?._id === currentProduct.category?._id
-                ).slice(0, 3);
-                setRelatedProducts(related);
-                
+                // Once product is loaded, fetch related products separately
+                fetchRelated(res.data);
             } catch (err) {
-                console.error('Error fetching data:', err);
+                console.error('Error fetching product:', err);
                 setError('Product not found.');
             } finally {
                 setLoading(false);
             }
         };
-        fetchData();
+
+        const fetchRelated = async (currentProduct) => {
+            try {
+                setLoadingRelated(true);
+                const res = await axios.get('/shop/products');
+                // Filter related products (same category, excluding current)
+                const related = res.data.filter(p => 
+                    p._id !== currentProduct._id && 
+                    p.category?._id === currentProduct.category?._id
+                ).slice(0, 3);
+                setRelatedProducts(related);
+            } catch (err) {
+                console.error('Error fetching related products:', err);
+            } finally {
+                setLoadingRelated(false);
+            }
+        };
+
+        fetchProduct();
         window.scrollTo(0, 0);
     }, [id]);
 
@@ -107,9 +116,30 @@ const ProductDetail = () => {
         }
     };
 
+    const HeroSkeleton = () => (
+        <div className="container mx-auto px-6 py-12 max-w-7xl animate-pulse">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+                <div className="aspect-square bg-slate-100 rounded-2xl"></div>
+                <div className="space-y-8">
+                    <div className="space-y-4">
+                        <div className="h-6 bg-slate-100 rounded w-1/4"></div>
+                        <div className="h-12 bg-slate-100 rounded w-3/4"></div>
+                        <div className="h-4 bg-slate-50 rounded w-full"></div>
+                    </div>
+                    <div className="h-48 bg-slate-100 rounded-2xl"></div>
+                </div>
+            </div>
+        </div>
+    );
+
     if (loading) return (
-        <div className="min-h-screen bg-white flex items-center justify-center">
-            <div className="w-10 h-10 border-3 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
+        <div className="bg-white min-h-screen">
+            <div className="border-b border-slate-50">
+                <div className="container mx-auto px-6 py-4 max-w-7xl">
+                    <div className="h-3 bg-slate-100 rounded w-24"></div>
+                </div>
+            </div>
+            <HeroSkeleton />
         </div>
     );
 
@@ -279,7 +309,7 @@ const ProductDetail = () => {
             </div>
 
             {/* Related Products */}
-            {relatedProducts.length > 0 && (
+            {(loadingRelated || relatedProducts.length > 0) && (
                 <div className="container mx-auto px-6 py-24 max-w-7xl">
                     <div className="flex items-center justify-between mb-12">
                         <div>
@@ -290,28 +320,45 @@ const ProductDetail = () => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                        {relatedProducts.map(p => (
-                            <Link 
-                                key={p._id} 
-                                to={`/${p.slug || p._id}`} 
-                                className="group block bg-white border border-slate-100 rounded-3xl p-6 hover:shadow-2xl hover:shadow-slate-100 transition-all duration-500"
-                            >
-                                <div className="aspect-[16/10] bg-slate-50 rounded-2xl mb-6 flex items-center justify-center p-6 overflow-hidden">
-                                    <img 
-                                        src={p.imageUrl} 
-                                        alt={p.name} 
-                                        className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" 
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <h4 className="text-lg font-bold text-slate-900 leading-tight group-hover:text-slate-600 transition-colors">{p.name}</h4>
-                                    <div className="flex items-center justify-between pt-2">
-                                        <span className="text-xl font-black text-slate-900">₹{p.price.toLocaleString()}</span>
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Buy Details</span>
+                        {loadingRelated ? (
+                            <>
+                                {[1, 2, 3].map((i) => (
+                                    <div key={i} className="bg-white border border-slate-100 rounded-3xl p-6 animate-pulse">
+                                        <div className="aspect-[16/10] bg-slate-50 rounded-2xl mb-6"></div>
+                                        <div className="space-y-4">
+                                            <div className="h-4 bg-slate-100 rounded w-3/4"></div>
+                                            <div className="flex justify-between items-center pt-2">
+                                                <div className="h-6 bg-slate-100 rounded w-1/4"></div>
+                                                <div className="h-3 bg-slate-100 rounded w-1/4"></div>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </Link>
-                        ))}
+                                ))}
+                            </>
+                        ) : (
+                            relatedProducts.map(p => (
+                                <Link 
+                                    key={p._id} 
+                                    to={`/${p.slug || p._id}`} 
+                                    className="group block bg-white border border-slate-100 rounded-3xl p-6 hover:shadow-2xl hover:shadow-slate-100 transition-all duration-500"
+                                >
+                                    <div className="aspect-[16/10] bg-slate-50 rounded-2xl mb-6 flex items-center justify-center p-6 overflow-hidden">
+                                        <img 
+                                            src={p.imageUrl} 
+                                            alt={p.name} 
+                                            className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" 
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <h4 className="text-lg font-bold text-slate-900 leading-tight group-hover:text-slate-600 transition-colors">{p.name}</h4>
+                                        <div className="flex items-center justify-between pt-2">
+                                            <span className="text-xl font-black text-slate-900">₹{p.price.toLocaleString()}</span>
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Buy Details</span>
+                                        </div>
+                                    </div>
+                                </Link>
+                            ))
+                        )}
                     </div>
                 </div>
             )}
