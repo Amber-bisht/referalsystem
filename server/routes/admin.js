@@ -6,6 +6,7 @@ const User = require('../models/User');
 const Product = require('../models/Product');
 const Category = require('../models/Category');
 const Banner = require('../models/Banner');
+const { productSchema, categorySchema, bannerSchema } = require('../validators/admin.schema');
 
 // Apply auth and admin middleware to all routes in this file
 router.use(auth, admin);
@@ -48,28 +49,6 @@ router.get('/orders', async (req, res) => {
     }
 });
 
-// @route   PATCH api/admin/orders/:userId/:purchaseId
-// @desc    Update order status
-router.get('/orders/:userId/:purchaseId', async (req, res) => {
-    const { userId, purchaseId } = req.params;
-    const { status } = req.query; // Using query for simplicity in this specific request
-
-    try {
-        const user = await User.findById(userId);
-        if (!user) return res.status(404).json({ msg: 'User not found' });
-
-        const purchase = user.purchaseHistory.id(purchaseId);
-        if (!purchase) return res.status(404).json({ msg: 'Purchase not found' });
-
-        purchase.status = status;
-        await user.save();
-
-        res.json({ msg: 'Order status updated', status: purchase.status });
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    }
-});
 
 // @route   GET api/admin/withdrawals
 // @desc    Get all redemption history
@@ -113,7 +92,12 @@ router.get('/categories', async (req, res) => {
 // @route   POST api/admin/categories
 // @desc    Add new category
 router.post('/categories', async (req, res) => {
-    const { name } = req.body;
+    const validation = categorySchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ msg: validation.error.errors[0].message });
+    }
+
+    const { name } = validation.data;
     try {
         const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
         const newCategory = new Category({ name, slug });
@@ -154,9 +138,13 @@ router.get('/banners', async (req, res) => {
 // @route   POST api/admin/banners
 // @desc    Add new banner
 router.post('/banners', async (req, res) => {
-    const { title, description, imageUrl, productSlug, isActive } = req.body;
+    const validation = bannerSchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ msg: validation.error.errors[0].message });
+    }
+
     try {
-        const newBanner = new Banner({ title, description, imageUrl, productSlug, isActive });
+        const newBanner = new Banner(validation.data);
         await newBanner.save();
         res.json(newBanner);
     } catch (err) {
@@ -168,11 +156,15 @@ router.post('/banners', async (req, res) => {
 // @route   PUT api/admin/banners/:id
 // @desc    Update banner
 router.put('/banners/:id', async (req, res) => {
-    const { title, description, imageUrl, productSlug, isActive } = req.body;
+    const validation = bannerSchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ msg: validation.error.errors[0].message });
+    }
+
     try {
         const banner = await Banner.findByIdAndUpdate(
             req.params.id,
-            { $set: { title, description, imageUrl, productSlug, isActive } },
+            { $set: validation.data },
             { new: true }
         );
         res.json(banner);
@@ -199,12 +191,17 @@ router.delete('/banners/:id', async (req, res) => {
 // @route   POST api/admin/products
 // @desc    Add new product
 router.post('/products', async (req, res) => {
-    let { name, slug, price, originalPrice, profit, description, imageUrl, stock, category } = req.body;
+    const validation = productSchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ msg: validation.error.errors[0].message });
+    }
+
+    let { name, slug } = validation.data;
     try {
         if (!slug || slug.trim() === "") {
             slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
         }
-        const newProduct = new Product({ name, slug, price, originalPrice, profit, description, imageUrl, stock: stock || 0, category });
+        const newProduct = new Product({ ...validation.data, slug });
         await newProduct.save();
         res.json(newProduct);
     } catch (err) {
@@ -216,14 +213,19 @@ router.post('/products', async (req, res) => {
 // @route   PUT api/admin/products/:id
 // @desc    Update product
 router.put('/products/:id', async (req, res) => {
-    let { name, slug, price, originalPrice, profit, description, imageUrl, stock, category } = req.body;
+    const validation = productSchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ msg: validation.error.errors[0].message });
+    }
+
+    let { name, slug } = validation.data;
     try {
         if (!slug || slug.trim() === "") {
             slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
         }
         const product = await Product.findByIdAndUpdate(
             req.params.id,
-            { $set: { name, slug, price, originalPrice, profit, description, imageUrl, stock: stock || 0, category } },
+            { $set: { ...validation.data, slug } },
             { new: true }
         );
         res.json(product);

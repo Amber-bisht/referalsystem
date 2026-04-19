@@ -7,7 +7,6 @@ import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Earnings from './pages/Earnings';
 import Referrals from './pages/Referrals';
-import Landing from './pages/Landing';
 import MyPurchases from './pages/MyPurchases';
 import ProductDetail from './pages/ProductDetail';
 

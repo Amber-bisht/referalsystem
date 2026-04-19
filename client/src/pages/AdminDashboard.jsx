@@ -49,14 +49,6 @@ const AdminDashboard = () => {
         }
     };
 
-    const handleUpdateOrderStatus = async (userId, purchaseId, status) => {
-        try {
-            await axios.get(`/admin/orders/${userId}/${purchaseId}?status=${status}`);
-            fetchData();
-        } catch (err) {
-            console.error('Error updating order status', err);
-        }
-    };
 
     const handleAddProduct = async (e) => {
         e.preventDefault();
@@ -247,10 +239,9 @@ const AdminDashboard = () => {
                                     <table className="w-full text-left text-sm">
                                         <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 font-medium">
                                             <tr>
-                                                <th className="px-6 py-3 font-semibold">Order</th>
+                                                <th className="px-6 py-3 font-semibold text-center">Receipt ID</th>
                                                 <th className="px-6 py-3 font-semibold">Customer</th>
                                                 <th className="px-6 py-3 font-semibold">Product</th>
-                                                <th className="px-6 py-3 font-semibold">Status</th>
                                                 <th className="px-6 py-3 font-semibold">Status</th>
                                             </tr>
                                         </thead>
@@ -260,9 +251,9 @@ const AdminDashboard = () => {
                                                     <td className="px-6 py-4 text-slate-500 text-xs font-mono">{o.razorpayOrderId?.slice(-8)}</td>
                                                     <td className="px-6 py-4 font-medium">{o.user.email}</td>
                                                     <td className="px-6 py-4 font-bold text-slate-600">₹{o.price} <span className="text-xs font-normal ml-1">({o.productName})</span></td>
-                                                    <td className="px-6 py-4">
+                                                    <td className="px-6 py-4 text-center">
                                                         <span className="px-2 py-1 rounded-none text-[10px] font-black bg-emerald-600 text-white uppercase tracking-widest italic">
-                                                            LIQUIDATED
+                                                            ISSUED
                                                         </span>
                                                     </td>
                                                 </tr>

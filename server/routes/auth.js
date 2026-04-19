@@ -2,15 +2,23 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const User = require('../models/User');
+const { signupSchema, loginSchema } = require('../validators/auth.schema');
 
 // @route   POST api/auth/signup
 // @desc    Register user
 // @access  Public
 router.post('/signup', async (req, res) => {
-    const { email, password, referralCode } = req.body;
-
     try {
+        // Validate request body
+        const validation = signupSchema.safeParse(req.body);
+        if (!validation.success) {
+            return res.status(400).json({ msg: validation.error.errors[0].message });
+        }
+
+        const { email, password, referralCode } = validation.data;
+
         let user = await User.findOne({ email });
         if (user) {
             return res.status(400).json({ msg: 'User already exists' });
@@ -28,8 +36,8 @@ router.post('/signup', async (req, res) => {
             referredBy = parent._id;
         }
 
-        // Generate unique referral code for new user
-        const newReferralCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+        // Generate unique referral code for new user using cryptographically secure random bytes
+        const newReferralCode = crypto.randomBytes(3).toString('hex').toUpperCase();
 
         user = new User({
             email,
@@ -69,7 +77,13 @@ router.post('/signup', async (req, res) => {
 // @desc    Authenticate user & get token
 // @access  Public
 router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+    // Validate request body
+    const validation = loginSchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ msg: validation.error.errors[0].message });
+    }
+
+    const { email, password } = validation.data;
 
     try {
         let user = await User.findOne({ email });

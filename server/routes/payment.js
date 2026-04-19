@@ -5,6 +5,8 @@ const crypto = require('crypto');
 const auth = require('../middleware/auth');
 const Product = require('../models/Product');
 const User = require('../models/User');
+const mongoose = require('mongoose');
+const { createOrderSchema, verifyPaymentSchema, withdrawSchema } = require('../validators/payment.schema');
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -15,7 +17,12 @@ const razorpay = new Razorpay({
 // @desc    Create a Razorpay order
 // @access  Private
 router.post('/create-order', auth, async (req, res) => {
-    const { productId } = req.body;
+    const validation = createOrderSchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ msg: validation.error.errors[0].message });
+    }
+
+    const { productId } = validation.data;
 
     try {
         const product = await Product.findById(productId);
@@ -30,7 +37,7 @@ router.post('/create-order', auth, async (req, res) => {
         const options = {
             amount: product.price * 100, // amount in the smallest currency unit (paise)
             currency: 'INR',
-            receipt: `receipt_order_${Math.floor(Date.now() / 1000)}`,
+            receipt: `receipt_order_${crypto.randomBytes(3).toString('hex')}`,
             notes: {
                 productId: product._id.toString(),
                 userId: req.user.id
@@ -49,12 +56,17 @@ router.post('/create-order', auth, async (req, res) => {
 // @desc    Verify payment and distribute commissions
 // @access  Private
 router.post('/verify', auth, async (req, res) => {
+    const validation = verifyPaymentSchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ msg: validation.error.errors[0].message });
+    }
+
     const {
         razorpay_order_id,
         razorpay_payment_id,
         razorpay_signature,
         productId
-    } = req.body;
+    } = validation.data;
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
 
@@ -65,71 +77,80 @@ router.post('/verify', auth, async (req, res) => {
 
     const isAuthentic = expectedSignature === razorpay_signature;
 
-    if (isAuthentic) {
-        try {
-            const product = await Product.findById(productId);
-            if (!product) {
-                return res.status(404).json({ msg: 'Product not found' });
-            }
+    if (!isAuthentic) {
+        return res.status(400).json({ success: false, msg: 'Invalid signature' });
+    }
 
-            const buyer = await User.findById(req.user.id);
-            if (!buyer) {
-                return res.status(404).json({ msg: 'User not found' });
-            }
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-            // Generate unique voucher code
-            const voucherCode = `${product.name.substring(0, 3).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+    try {
+        const product = await Product.findById(productId).session(session);
+        if (!product) {
+            await session.abortTransaction();
+            return res.status(404).json({ msg: 'Product not found' });
+        }
 
-            // Save Purchase History
-            buyer.purchaseHistory.push({
-                productId: product._id,
-                productName: product.name,
-                productImage: product.imageUrl,
-                price: product.price,
-                razorpayOrderId: razorpay_order_id,
-                razorpayPaymentId: razorpay_payment_id,
-                voucherCode
-            });
-            await buyer.save();
+        const buyer = await User.findById(req.user.id).session(session);
+        if (!buyer) {
+            await session.abortTransaction();
+            return res.status(404).json({ msg: 'User not found' });
+        }
 
-            // Decrement Stock
-            product.stock = Math.max(0, product.stock - 1);
-            await product.save();
+        // Generate unique voucher code
+        const voucherCode = `${product.name.substring(0, 3).toUpperCase()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
 
-            // Commission Distribution Logic
-            if (product.price >= 10) {
-                const { profit } = product;
+        // Save Purchase History
+        buyer.purchaseHistory.push({
+            productId: product._id,
+            productName: product.name,
+            productImage: product.imageUrl,
+            price: product.price,
+            razorpayOrderId: razorpay_order_id,
+            razorpayPaymentId: razorpay_payment_id,
+            voucherCode
+        });
+        await buyer.save({ session });
 
-                // Level 1: Direct Parent
-                if (buyer.referredBy) {
-                    const level1Parent = await User.findById(buyer.referredBy);
-                    if (level1Parent) {
-                        const level1Earnings = profit * 0.05;
-                        level1Parent.earnings.direct += level1Earnings;
-                        level1Parent.earnings.total += level1Earnings;
-                        await level1Parent.save();
+        // Decrement Stock
+        product.stock = Math.max(0, product.stock - 1);
+        await product.save({ session });
 
-                        // Level 2: Parent of Parent
-                        if (level1Parent.referredBy) {
-                            const level2Parent = await User.findById(level1Parent.referredBy);
-                            if (level2Parent) {
-                                const level2Earnings = profit * 0.01;
-                                level2Parent.earnings.indirect += level2Earnings;
-                                level2Parent.earnings.total += level2Earnings;
-                                await level2Parent.save();
-                            }
+        // Commission Distribution Logic
+        if (product.price >= 10) {
+            const { profit } = product;
+
+            // Level 1: Direct Parent
+            if (buyer.referredBy) {
+                const level1Parent = await User.findById(buyer.referredBy).session(session);
+                if (level1Parent) {
+                    const level1Earnings = profit * 0.05;
+                    level1Parent.earnings.direct += level1Earnings;
+                    level1Parent.earnings.total += level1Earnings;
+                    await level1Parent.save({ session });
+
+                    // Level 2: Parent of Parent
+                    if (level1Parent.referredBy) {
+                        const level2Parent = await User.findById(level1Parent.referredBy).session(session);
+                        if (level2Parent) {
+                            const level2Earnings = profit * 0.01;
+                            level2Parent.earnings.indirect += level2Earnings;
+                            level2Parent.earnings.total += level2Earnings;
+                            await level2Parent.save({ session });
                         }
                     }
                 }
             }
-
-            res.json({ success: true, msg: 'Payment verified and transaction completed.' });
-        } catch (err) {
-            console.error(err);
-            res.status(500).send('Server Error');
         }
-    } else {
-        res.status(400).json({ success: false, msg: 'Invalid signature' });
+
+        await session.commitTransaction();
+        res.json({ success: true, msg: 'Payment verified and transaction completed.' });
+    } catch (err) {
+        await session.abortTransaction();
+        console.error(err);
+        res.status(500).send('Server Error');
+    } finally {
+        session.endSession();
     }
 });
 
@@ -137,37 +158,49 @@ router.post('/verify', auth, async (req, res) => {
 // @desc    Process fake withdrawal (Redeem Coupon)
 // @access  Private
 router.post('/withdraw', auth, async (req, res) => {
-    const { amount } = req.body;
+    const validation = withdrawSchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ msg: validation.error.errors[0].message });
+    }
+
+    const { amount, brand } = validation.data;
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
     try {
-        const user = await User.findById(req.user.id);
+        const user = await User.findById(req.user.id).session(session);
         if (!user) {
+            await session.abortTransaction();
             return res.status(404).json({ msg: 'User not found' });
         }
 
         const currentBalance = user.earnings.total - (user.earnings.withdrawn || 0);
 
         if (amount > currentBalance) {
+            await session.abortTransaction();
             return res.status(400).json({ msg: 'Insufficient balance' });
         }
 
         // Deduct by incrementing withdrawn amount
         user.earnings.withdrawn = (user.earnings.withdrawn || 0) + amount;
 
-        // Generate a professional-grade voucher code
-        const brandTag = (req.body.brand || 'Voucher').substring(0, 3).toUpperCase();
-        const randomPart = Math.random().toString(36).substring(2, 10).toUpperCase();
-        const couponCode = `GIFT-${brandTag}-${randomPart}`;
+        // Generate a cryptographically secure voucher code
+        const brandTag = (brand || 'VOUCHER').substring(0, 3).toUpperCase();
+        const code = crypto.randomBytes(5).toString('hex').toUpperCase();
+        const couponCode = `GIFT-${brandTag}-${code}`;
 
         // Record in history for admin tracking
         user.withdrawalHistory.push({
             amount,
-            brand: req.body.brand || 'Voucher',
+            brand: brand || 'Voucher',
             couponCode: couponCode,
             date: new Date()
         });
 
-        await user.save();
+        await user.save({ session });
+
+        await session.commitTransaction();
 
         res.json({ 
             success: true, 
@@ -176,8 +209,11 @@ router.post('/withdraw', auth, async (req, res) => {
             newBalance: user.earnings.total - user.earnings.withdrawn 
         });
     } catch (err) {
+        await session.abortTransaction();
         console.error(err);
         res.status(500).send('Server Error');
+    } finally {
+        session.endSession();
     }
 });
 
