@@ -28,22 +28,56 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Database Connection (Global Cache for Serverless)
+const MONGO_URI = process.env.MONGO_URI;
+let cachedConnection = null;
+
+async function connectToDatabase() {
+    if (cachedConnection) {
+        return cachedConnection;
+    }
+    
+    if (!MONGO_URI) {
+        console.error('CRITICAL: Missing MONGO_URI in environment variables.');
+        return;
+    }
+
+    try {
+        console.log('Establishing new MongoDB connection...');
+        cachedConnection = await mongoose.connect(MONGO_URI);
+        console.log('Connected to MongoDB');
+        return cachedConnection;
+    } catch (err) {
+        console.error('MongoDB Connection Error:', err);
+        throw err;
+    }
+}
+
+// Ensure database connection for API routes
+app.use(async (req, res, next) => {
+    try {
+        await connectToDatabase();
+        next();
+    } catch (err) {
+        res.status(500).json({ error: 'Database connection failed' });
+    }
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/shop', shopRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Database Connection
+// Server Startup
 const startServer = async () => {
     try {
-        await mongoose.connect(process.env.MONGO_URI);
-        console.log('MongoDB Connected');
+        await connectToDatabase();
         app.listen(PORT, () => {
             console.log(`Server running on port ${PORT}`);
         });
     } catch (err) {
-        console.error('MongoDB Connection Error:', err);
+        process.exit(1);
     }
 };
 
