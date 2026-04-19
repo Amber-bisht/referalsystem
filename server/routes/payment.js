@@ -154,17 +154,27 @@ router.post('/withdraw', auth, async (req, res) => {
         // Deduct by incrementing withdrawn amount
         user.earnings.withdrawn = (user.earnings.withdrawn || 0) + amount;
 
+        // Generate a professional-grade voucher code
+        const brandTag = (req.body.brand || 'Voucher').substring(0, 3).toUpperCase();
+        const randomPart = Math.random().toString(36).substring(2, 10).toUpperCase();
+        const couponCode = `GIFT-${brandTag}-${randomPart}`;
+
         // Record in history for admin tracking
         user.withdrawalHistory.push({
             amount,
             brand: req.body.brand || 'Voucher',
-            couponCode: Math.floor(100000 + Math.random() * 900000).toString(),
+            couponCode: couponCode,
             date: new Date()
         });
 
         await user.save();
 
-        res.json({ success: true, msg: 'Withdrawal successful', newBalance: user.earnings.total - user.earnings.withdrawn });
+        res.json({ 
+            success: true, 
+            msg: 'Withdrawal successful', 
+            couponCode: couponCode,
+            newBalance: user.earnings.total - user.earnings.withdrawn 
+        });
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error');

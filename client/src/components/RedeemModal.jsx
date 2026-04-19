@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 const RedeemModal = ({ isOpen, onClose, currentBalance, onRedeemSuccess }) => {
@@ -6,8 +7,6 @@ const RedeemModal = ({ isOpen, onClose, currentBalance, onRedeemSuccess }) => {
     const [selectedCoupon, setSelectedCoupon] = useState(null);
     const [generatedCode, setGeneratedCode] = useState('');
     const [error, setError] = useState('');
-
-    if (!isOpen) return null;
 
     const [coupons, setCoupons] = useState([]);
 
@@ -23,9 +22,9 @@ const RedeemModal = ({ isOpen, onClose, currentBalance, onRedeemSuccess }) => {
         if (isOpen) fetchCoupons();
     }, [isOpen]);
 
-    const generateFakeCode = () => {
-        return `GIFT-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-    };
+    const [newBalance, setNewBalance] = useState(null);
+
+    if (!isOpen) return null;
 
     const handleRedeem = async (coupon) => {
         if (currentBalance < coupon.price) {
@@ -37,14 +36,14 @@ const RedeemModal = ({ isOpen, onClose, currentBalance, onRedeemSuccess }) => {
         setError('');
 
         try {
-            await axios.post('/payment/withdraw', { 
+            const res = await axios.post('/payment/withdraw', { 
                 amount: coupon.price,
                 brand: coupon.name 
             });
             
-            const code = generateFakeCode();
-            setGeneratedCode(code);
+            setGeneratedCode(res.data.couponCode); // REAL CODE FROM BACKEND
             setSelectedCoupon(coupon);
+            setNewBalance(res.data.newBalance);
             setStatus('success');
             onRedeemSuccess();
         } catch (err) {
@@ -118,24 +117,19 @@ const RedeemModal = ({ isOpen, onClose, currentBalance, onRedeemSuccess }) => {
                 )}
 
                 {status === 'success' && (
-                    <div className="p-8 text-center animate-in fade-in zoom-in duration-300">
-                        <div className="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"/></svg>
-                        </div>
-                        
-                        <h2 className="text-xl font-bold text-slate-900 mb-2">Redemption Success</h2>
-                        <p className="text-sm text-slate-500 mb-8">Your {selectedCoupon.name} is ready to use.</p>
-                        
-                        <div className="bg-slate-50 p-6 rounded-xl border border-slate-100 mb-8">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Your Voucher Code</p>
-                            <span className="text-3xl font-mono font-bold tracking-[0.2em] text-slate-900 uppercase">{generatedCode}</span>
-                        </div>
+                    <div className="p-10 text-center animate-in fade-in zoom-in duration-300">
+                        <h3 className="text-xl font-bold text-slate-900 mb-2">
+                            Success
+                        </h3>
+                        <p className="text-sm text-slate-500 mb-10 leading-relaxed">
+                            Your redemption of <span className="font-bold text-slate-900">{selectedCoupon?.name}</span> was successful. You can find it in your items history.
+                        </p>
 
                         <button
                             onClick={onClose}
                             className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-slate-800 transition-all active:scale-95 shadow-sm"
                         >
-                            Return to Dashboard
+                            Great
                         </button>
                     </div>
                 )}
