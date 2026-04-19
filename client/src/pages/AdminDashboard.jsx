@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import AdminSidebar from '../components/AdminSidebar';
+import { useAuth } from '../context/AuthContext';
 
 const AdminDashboard = () => {
+    const { logout } = useAuth();
     const [activeTab, setActiveTab] = useState('users');
     const [data, setData] = useState({
         users: [],
@@ -17,7 +20,7 @@ const AdminDashboard = () => {
     const [newProduct, setNewProduct] = useState({ name: '', slug: '', price: '', originalPrice: '', commissionPercentage: 10, description: '', imageUrl: '', stock: '', category: '' });
     const [newCategory, setNewCategory] = useState({ name: '' });
     const [newBanner, setNewBanner] = useState({ title: '', description: '', imageUrl: '', productSlug: '', isActive: true });
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -135,46 +138,28 @@ const AdminDashboard = () => {
         }
     };
 
-    const menuItems = [
-        { id: 'users', label: 'Users', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg> },
-        { id: 'orders', label: 'Orders', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg> },
-        { id: 'categories', label: 'Categories', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg> },
-        { id: 'products', label: 'Products', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg> },
-        { id: 'withdrawals', label: 'Withdrawals', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg> },
-        { id: 'banners', label: 'Banners', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> },
-    ];
-
     return (
         <div className="flex h-screen bg-white overflow-hidden text-slate-900 font-sans">
-            {/* Minimalist Sidebar */}
-            <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-slate-50 border-r border-slate-100 transition-all duration-300 flex flex-col`}>
-                <div className="py-8"></div>
-
-                <nav className="flex-1 px-3 py-4 space-y-1">
-                    {menuItems.map(item => (
-                        <button
-                            key={item.id}
-                            onClick={() => setActiveTab(item.id)}
-                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm ${
-                                activeTab === item.id ? 'bg-slate-200 text-slate-900 font-semibold' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
-                            }`}
-                        >
-                            {item.icon}
-                            {sidebarOpen && <span>{item.label}</span>}
-                        </button>
-                    ))}
-                </nav>
-
-                <div className="p-4 border-t border-slate-100">
-                    <button className="w-full flex items-center gap-3 px-3 py-2 text-slate-500 hover:text-red-600 transition-all text-sm">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                        {sidebarOpen && <span>Logout</span>}
-                    </button>
-                </div>
-            </aside>
+            <AdminSidebar 
+                activeTab={activeTab} 
+                setActiveTab={setActiveTab} 
+                isOpen={sidebarOpen} 
+                setIsOpen={setSidebarOpen} 
+                onLogout={logout}
+            />
 
             {/* Content area */}
-            <main className="flex-1 flex flex-col overflow-hidden">
+            <main className="flex-1 flex flex-col overflow-hidden bg-slate-50/30">
+                {/* Mobile Header */}
+                <header className="lg:hidden flex items-center justify-between px-6 py-4 bg-white border-b border-slate-100">
+                    <div className="text-lg font-bold tracking-tight">referal.amberbish</div>
+                    <button 
+                        onClick={() => setSidebarOpen(true)}
+                        className="p-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors"
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                </header>
 
                 <div className="flex-1 overflow-y-auto p-8">
                     {loading ? (
