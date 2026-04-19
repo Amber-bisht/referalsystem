@@ -97,7 +97,7 @@ router.post('/verify', auth, async (req, res) => {
             await product.save();
 
             // Commission Distribution Logic
-            if (product.price > 1000) {
+            if (product.price >= 10) {
                 const { profit } = product;
 
                 // Level 1: Direct Parent
