@@ -9,7 +9,7 @@ const ProductDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user, refreshUser } = useAuth();
-    const { addToCart } = useCart();
+    const { addToCart, cartItems } = useCart();
     
     const [product, setProduct] = useState(null);
     const [relatedProducts, setRelatedProducts] = useState([]);
@@ -314,24 +314,26 @@ const ProductDetail = () => {
                                 )}
                             </div>
 
-                            <div className="flex gap-3 mb-4">
+                            <div className="flex gap-3 mb-4 w-full">
                                 <button
-                                    onClick={() => addToCart(product)}
-                                    disabled={product.stock <= 0}
-                                    className="p-4 bg-white border border-slate-100 rounded-lg text-slate-900 hover:border-slate-900 transition-all active:scale-[0.98] disabled:opacity-30"
-                                >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                                </button>
-                                <button
-                                    onClick={() => handlePurchaseInitiate('online')}
+                                    onClick={() => {
+                                        const isInCart = cartItems.some(item => item._id === product._id);
+                                        if (isInCart) {
+                                            navigate('/cart');
+                                        } else {
+                                            addToCart(product);
+                                        }
+                                    }}
                                     disabled={product.stock <= 0}
                                     className={`flex-1 py-4 rounded-lg font-black text-[10px] uppercase tracking-[0.2em] transition-all active:scale-[0.98] ${
                                         product.stock <= 0 
                                         ? 'bg-slate-50 text-slate-300 cursor-not-allowed border border-slate-100' 
-                                        : 'bg-slate-900 text-white hover:bg-black shadow-lg shadow-slate-100'
+                                        : cartItems.some(item => item._id === product._id)
+                                            ? 'bg-white border border-slate-900 text-slate-900 hover:bg-slate-50'
+                                            : 'bg-slate-900 text-white hover:bg-black shadow-lg shadow-slate-100'
                                     }`}
                                 >
-                                    {product.stock <= 0 ? 'Out of Stock' : 'Checkout Now'}
+                                    {product.stock <= 0 ? 'Out of Stock' : cartItems.some(item => item._id === product._id) ? 'Go to Cart' : 'Add to Cart'}
                                 </button>
                             </div>
 

@@ -17,7 +17,7 @@ const Dashboard = () => {
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [purchasedProduct, setPurchasedProduct] = useState(null);
     const { user, refreshUser } = useAuth();
-    const { addToCart } = useCart();
+    const { addToCart, cartItems } = useCart();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -206,42 +206,40 @@ const Dashboard = () => {
                                     Safe and reliable delivery to your address.
                                 </p>
 
-                                <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
-                                    <div className="flex flex-col">
-                                        <div className="flex items-baseline gap-2">
-                                            <span className="text-2xl font-black text-slate-900 leading-none">₹{product.price.toLocaleString()}</span>
-                                            {product.originalPrice && product.originalPrice > product.price && (
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-xs text-slate-400 line-through font-bold decoration-slate-300">₹{product.originalPrice.toLocaleString()}</span>
-                                                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded shadow-sm">
-                                                        {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
+                                <div className="mt-auto pt-6 border-t border-slate-50 flex flex-col gap-5">
+                                    <div className="flex flex-col gap-1.5">
+                                        <span className="text-3xl font-black text-slate-900 leading-none">₹{product.price.toLocaleString()}</span>
+                                        {product.originalPrice && product.originalPrice > product.price && (
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[11px] text-slate-400 line-through font-bold decoration-slate-300">₹{product.originalPrice.toLocaleString()}</span>
+                                                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md shadow-sm">
+                                                    {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
 
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-2 w-full">
                                         <button
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                addToCart(product);
+                                                const isInCart = cartItems.some(item => item._id === product._id);
+                                                if (isInCart) {
+                                                    navigate('/cart');
+                                                } else {
+                                                    addToCart(product);
+                                                }
                                             }}
                                             disabled={product.stock <= 0}
-                                            className="p-3 bg-white border border-slate-100 rounded-lg text-slate-900 hover:border-slate-900 transition-all active:scale-95 disabled:opacity-30"
-                                        >
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                                        </button>
-                                        <button
-                                            onClick={(e) => handlePurchase(e, product)}
-                                            disabled={product.stock <= 0}
-                                            className={`flex-1 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 z-10 ${
+                                            className={`flex-1 py-4 rounded-xl text-[11px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 z-10 ${
                                                 product.stock <= 0 
                                                 ? 'bg-slate-50 text-slate-300 border border-slate-100 cursor-not-allowed' 
-                                                : 'bg-slate-900 text-white hover:bg-black shadow-lg shadow-slate-100'
+                                                : cartItems.some(item => item._id === product._id)
+                                                    ? 'bg-white border-2 border-slate-900 text-slate-900 hover:bg-slate-50'
+                                                    : 'bg-slate-900 text-white hover:bg-black shadow-xl shadow-slate-200'
                                             }`}
                                         >
-                                            {product.stock <= 0 ? 'Empty' : 'Buy Now'}
+                                            {product.stock <= 0 ? 'Sold Out' : cartItems.some(item => item._id === product._id) ? 'Go to Cart' : 'Add to Cart'}
                                         </button>
                                     </div>
                                 </div>
@@ -302,21 +300,39 @@ const Dashboard = () => {
                                             <span className="flex-shrink-0 px-2 py-0.5 bg-slate-50 border border-slate-100 text-slate-400 text-[9px] font-bold uppercase tracking-widest rounded-md">Game</span>
                                         </div>
                                         <p className="text-slate-500 text-xs font-medium leading-relaxed mb-6 line-clamp-2 h-8">Safe and reliable delivery to your address.</p>
-                                        <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
-                                            <div className="flex flex-col">
-                                                <div className="flex items-baseline gap-2">
-                                                    <span className="text-2xl font-black text-slate-900 leading-none">₹{product.price.toLocaleString()}</span>
-                                                    {product.originalPrice && product.originalPrice > product.price && (
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-xs text-slate-400 line-through font-bold decoration-slate-300">₹{product.originalPrice.toLocaleString()}</span>
-                                                            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded shadow-sm">
-                                                                {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                </div>
+                                        <div className="mt-auto pt-6 border-t border-slate-50 flex flex-col gap-5">
+                                            <div className="flex flex-col gap-1.5">
+                                                <span className="text-3xl font-black text-slate-900 leading-none">₹{product.price.toLocaleString()}</span>
+                                                {product.originalPrice && product.originalPrice > product.price && (
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-[11px] text-slate-400 line-through font-bold decoration-slate-300">₹{product.originalPrice.toLocaleString()}</span>
+                                                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md shadow-sm">
+                                                            {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                                                        </span>
+                                                    </div>
+                                                )}
                                             </div>
-                                            <button onClick={(e) => handlePurchase(e, product)} disabled={product.stock <= 0} className={`px-6 py-3 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all active:scale-95 shadow-md z-10 ${product.stock <= 0 ? 'bg-slate-50 text-slate-300 border border-slate-100 cursor-not-allowed shadow-none' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200'}`}>{product.stock <= 0 ? 'Empty' : 'Buy Now'}</button>
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    const isInCart = cartItems.some(item => item._id === product._id);
+                                                    if (isInCart) {
+                                                        navigate('/cart');
+                                                    } else {
+                                                        addToCart(product);
+                                                    }
+                                                }} 
+                                                disabled={product.stock <= 0} 
+                                                className={`w-full py-4 rounded-xl text-[11px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 shadow-xl z-10 ${
+                                                    product.stock <= 0 
+                                                    ? 'bg-slate-50 text-slate-300 border border-slate-100 cursor-not-allowed shadow-none' 
+                                                    : cartItems.some(item => item._id === product._id)
+                                                        ? 'bg-white border-2 border-slate-900 text-slate-900 hover:bg-slate-50 shadow-none'
+                                                        : 'bg-slate-900 text-white hover:bg-black shadow-slate-200'
+                                                }`}
+                                            >
+                                                {product.stock <= 0 ? 'Sold Out' : cartItems.some(item => item._id === product._id) ? 'Go to Cart' : 'Add to Cart'}
+                                            </button>
                                         </div>
                                     </div>
                                 </Link>

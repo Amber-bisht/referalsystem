@@ -264,6 +264,7 @@ const Cart = () => {
                                             onClick={() => setIsAddressModalOpen(true)}
                                             className="px-8 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all"
                                         >Initialize First Address</button>
+                                    </div>
                                 )}
                             </div>
                         </div>
