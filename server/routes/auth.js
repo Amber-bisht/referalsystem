@@ -14,10 +14,10 @@ router.post('/signup', async (req, res) => {
         // Validate request body
         const validation = signupSchema.safeParse(req.body);
         if (!validation.success) {
-            return res.status(400).json({ msg: validation.error.errors[0].message });
+            return res.status(400).json({ msg: validation.error.issues[0].message });
         }
 
-        const { email, password, referralCode } = validation.data;
+        const { email, password, phone, address, referralCode } = validation.data;
 
         let user = await User.findOne({ email });
         if (user) {
@@ -42,6 +42,8 @@ router.post('/signup', async (req, res) => {
         user = new User({
             email,
             password,
+            phone,
+            address,
             referralCode: newReferralCode,
             referredBy
         });
@@ -80,7 +82,7 @@ router.post('/login', async (req, res) => {
     // Validate request body
     const validation = loginSchema.safeParse(req.body);
     if (!validation.success) {
-        return res.status(400).json({ msg: validation.error.errors[0].message });
+        return res.status(400).json({ msg: validation.error.issues[0].message });
     }
 
     const { email, password } = validation.data;
@@ -119,6 +121,29 @@ router.post('/login', async (req, res) => {
 router.get('/user', require('../middleware/auth'), async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select('-password');
+        res.json(user);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   PUT api/auth/profile
+// @desc    Update user profile (phone, address)
+// @access  Private
+router.put('/profile', require('../middleware/auth'), async (req, res) => {
+    const { phone, address } = req.body;
+    try {
+        const updateFields = {};
+        if (phone) updateFields.phone = phone;
+        if (address) updateFields.address = address;
+
+        const user = await User.findByIdAndUpdate(
+            req.user.id,
+            { $set: updateFields },
+            { new: true }
+        ).select('-password');
+        
         res.json(user);
     } catch (err) {
         console.error(err.message);

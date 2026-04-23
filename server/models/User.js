@@ -14,6 +14,13 @@ const mongoose = require('mongoose');
 const UserSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    phone: { type: String },
+    address: {
+        line1: String,
+        city: String,
+        state: String,
+        zipCode: String
+    },
     referralCode: { type: String, unique: true },
     referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     directReferrals: {

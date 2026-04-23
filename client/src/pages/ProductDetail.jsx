@@ -15,6 +15,24 @@ const ProductDetail = () => {
     const [loadingRelated, setLoadingRelated] = useState(true);
     const [error, setError] = useState('');
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+    const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+    const [addressForm, setAddressForm] = useState({
+        line1: '',
+        city: '',
+        state: 'Maharashtra',
+        zipCode: '',
+        phone: ''
+    });
+    const [pendingPurchaseType, setPendingPurchaseType] = useState(null); // 'online' or 'wallet'
+
+    const INDIAN_STATES = [
+        "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", 
+        "Chandigarh", "Chhattisgarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Goa", 
+        "Gujarat", "Haryana", "Himachal Pradesh", "Jammu and Kashmir", "Jharkhand", "Karnataka", 
+        "Kerala", "Ladakh", "Lakshadweep", "Madhya Pradesh", "Maharashtra", "Manipur", 
+        "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Puducherry", "Punjab", "Rajasthan", 
+        "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"
+    ];
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -54,12 +72,56 @@ const ProductDetail = () => {
         window.scrollTo(0, 0);
     }, [id]);
 
-    const handlePurchase = async () => {
+    useEffect(() => {
+        if (user) {
+            setAddressForm({
+                line1: user.address?.line1 || '',
+                city: user.address?.city || '',
+                state: user.address?.state || 'Maharashtra',
+                zipCode: user.address?.zipCode || '',
+                phone: user.phone || ''
+            });
+        }
+    }, [user]);
+
+    const handlePurchaseInitiate = (type) => {
         if (!user) {
             navigate('/login');
             return;
         }
-        
+        setPendingPurchaseType(type);
+        setIsAddressModalOpen(true);
+    };
+
+    const handleAddressSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            // Update profile first
+            await axios.put('/auth/profile', {
+                phone: addressForm.phone,
+                address: {
+                    line1: addressForm.line1,
+                    city: addressForm.city,
+                    state: addressForm.state,
+                    zipCode: addressForm.zipCode
+                }
+            });
+            await refreshUser();
+            setIsAddressModalOpen(false);
+            
+            // Proceed with the pending purchase
+            if (pendingPurchaseType === 'online') {
+                executeOnlinePurchase();
+            } else if (pendingPurchaseType === 'wallet') {
+                executeWalletPurchase();
+            }
+        } catch (err) {
+            console.error('Error updating address', err);
+            setError('Failed to update delivery information.');
+        }
+    };
+
+    const executeOnlinePurchase = async () => {
         setError('');
         try {
             const orderRes = await axios.post('/payment/create-order', {
@@ -72,7 +134,7 @@ const ProductDetail = () => {
                 key: import.meta.env.VITE_RAZORPAY_KEY_ID,
                 amount: order.amount,
                 currency: order.currency,
-                name: "referal.amberbisht.me",
+                name: "Games Store",
                 description: `Purchase ${product.name}`,
                 order_id: order.id,
                 handler: async function (response) {
@@ -98,6 +160,7 @@ const ProductDetail = () => {
                 prefill: {
                     name: user?.email || "",
                     email: user?.email || "",
+                    contact: addressForm.phone || user?.phone || ""
                 },
                 theme: {
                     color: "#0f172a"
@@ -113,6 +176,29 @@ const ProductDetail = () => {
         } catch (err) {
             setError('Error initializing payment.');
             console.error(err);
+        }
+    };
+
+    const executeWalletPurchase = async () => {
+        if (!window.confirm(`Are you sure you want to purchase this game using your referral balance of ₹${product.price}?`)) {
+            return;
+        }
+
+        setError('');
+        try {
+            const res = await axios.post('/payment/pay-with-wallet', {
+                productId: product._id
+            });
+
+            if (res.data.success) {
+                setIsSuccessModalOpen(true);
+                refreshUser();
+            } else {
+                setError(res.data.msg || 'Purchase failed.');
+            }
+        } catch (err) {
+            console.error(err);
+            setError(err.response?.data?.msg || 'Error processing wallet purchase.');
         }
     };
 
@@ -162,7 +248,7 @@ const ProductDetail = () => {
                     <nav className="flex items-center gap-2 text-[11px] font-bold text-slate-400">
                         <Link to="/" className="hover:text-slate-900 transition-colors uppercase tracking-widest">Store</Link>
                         <span className="text-slate-200">/</span>
-                        <span className="text-slate-900 uppercase tracking-widest">{product.category?.name || "Gift Card"}</span>
+                        <span className="text-slate-900 uppercase tracking-widest">{product.category?.name || "Game"}</span>
                     </nav>
                 </div>
             </div>
@@ -199,7 +285,7 @@ const ProductDetail = () => {
                         <div className="space-y-4">
                             <div className="flex items-center gap-3">
                                 <span className="px-2 py-1 bg-slate-50 border border-slate-100 text-slate-400 text-[10px] font-bold uppercase tracking-widest rounded-md">
-                                    {product.category?.name || "Voucher"}
+                                    {product.category?.name || "Game"}
                                 </span>
                                 {product.stock <= 5 && product.stock > 0 && (
                                     <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest">
@@ -213,7 +299,7 @@ const ProductDetail = () => {
                             </h1>
                             
                             <p className="text-slate-500 text-sm font-medium leading-relaxed max-w-md">
-                                {product.description || "Purchase this premium e-gift card to access brand-specific credits instantly. This digital voucher can be redeemed directly on the merchant's platform."}
+                                {product.description || "Get your hands on this premium game. We provide fast and reliable delivery directly to your doorstep. Order now to start your adventure!"}
                             </p>
                         </div>
 
@@ -227,7 +313,7 @@ const ProductDetail = () => {
                             </div>
 
                             <button
-                                onClick={handlePurchase}
+                                onClick={() => handlePurchaseInitiate('online')}
                                 disabled={product.stock <= 0}
                                 className={`w-full py-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all active:scale-[0.98] mb-4 ${
                                     product.stock <= 0 
@@ -235,8 +321,18 @@ const ProductDetail = () => {
                                     : 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-100'
                                 }`}
                             >
-                                {product.stock <= 0 ? 'Out of Stock' : 'Confirm Purchase'}
+                                {product.stock <= 0 ? 'Out of Stock' : 'Pay Online'}
                             </button>
+
+                            {user && (user.earnings.total - (user.earnings.withdrawn || 0)) >= product.price && (
+                                <button
+                                    onClick={() => handlePurchaseInitiate('wallet')}
+                                    disabled={product.stock <= 0}
+                                    className="w-full py-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all active:scale-[0.98] bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-100"
+                                >
+                                    Pay with Balance (₹{product.price})
+                                </button>
+                            )}
                         </div>
 
                         {/* Quick Trust Badges */}
@@ -245,13 +341,13 @@ const ProductDetail = () => {
                                 <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-slate-900 shadow-sm">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                 </div>
-                                <span className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">Instant Delivery</span>
+                                <span className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">Doorstep Delivery</span>
                             </div>
                             <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-50">
                                 <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-slate-900 shadow-sm">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                                 </div>
-                                <span className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">100% Genuine</span>
+                                <span className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">Verified Seller</span>
                             </div>
                         </div>
                     </div>
@@ -264,15 +360,15 @@ const ProductDetail = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-24">
                         <div className="space-y-12">
                             <div>
-                                <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6">How to use</h3>
-                                <h2 className="text-3xl font-bold text-slate-900 tracking-tight leading-tight">Follow these simple steps to redeem your credits.</h2>
+                                <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6">Delivery info</h3>
+                                <h2 className="text-3xl font-bold text-slate-900 tracking-tight leading-tight">Fast and reliable shipping to your home.</h2>
                             </div>
                             
                             <div className="space-y-8">
                                 {[
-                                    { step: "01", title: "Complete Purchase", desc: "Purchase the voucher and the code will be instantly visible in your profile." },
-                                    { step: "02", title: "Copy Code", desc: "Copy the unique alphanumeric voucher code from your 'My Purchases' section." },
-                                    { step: "03", title: "Apply at Merchant", desc: "Go to the merchant's portal or app and enter the code in the 'Gift Card' section." }
+                                    { step: "01", title: "Order Confirmed", desc: "Your order is placed and payment is verified." },
+                                    { step: "02", title: "Processing", desc: "Our team prepares your package for shipment." },
+                                    { step: "03", title: "Delivered", desc: "Receive your product at your doorstep within 3-5 business days." }
                                 ].map((item, idx) => (
                                     <div key={idx} className="flex gap-6 pb-8 border-b border-slate-200 last:border-0">
                                         <span className="text-2xl font-black text-slate-200 italic">{item.step}</span>
@@ -286,14 +382,14 @@ const ProductDetail = () => {
                         </div>
 
                         <div className="p-12 bg-white rounded-3xl border border-slate-100 shadow-sm">
-                            <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8">Redemption Terms</h3>
+                            <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8">Shipping Terms</h3>
                             <ul className="space-y-6">
                                 {[
-                                    "This voucher is valid for 12 months from the date of purchase.",
-                                    "Non-refundable and cannot be exchanged for cash.",
-                                    "Redeemable across all official merchant platforms.",
-                                    "Partial lookup may vary based on merchant terms.",
-                                    "For support, contact merchant customer care with your code."
+                                    "Delivery usually takes 3-7 business days depending on location.",
+                                    "Ensure your address and phone number are correct for smooth delivery.",
+                                    "You can track your order status in the 'My Purchases' section.",
+                                    "Contact support for any delivery-related queries.",
+                                    "Return policy applies for damaged products on arrival."
                                 ].map((term, idx) => (
                                     <li key={idx} className="flex gap-4 items-start group">
                                         <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0"></div>
@@ -314,7 +410,7 @@ const ProductDetail = () => {
                     <div className="flex items-center justify-between mb-12">
                         <div>
                             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2">Recommended</h3>
-                            <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Vouchers you might like</h2>
+                            <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Games you might like</h2>
                         </div>
                         <Link to="/" className="text-[11px] font-black text-slate-900 uppercase tracking-widest border-b-2 border-slate-900 pb-1">Shop All</Link>
                     </div>
@@ -368,6 +464,107 @@ const ProductDetail = () => {
                 onClose={() => setIsSuccessModalOpen(false)} 
                 productName={product.name} 
             />
+
+            {/* Address Modal */}
+            {isAddressModalOpen && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-300">
+                        <div className="px-10 py-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
+                            <div>
+                                <h3 className="text-xl font-black text-slate-900 tracking-tight">Delivery Address</h3>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Confirm where to ship your game</p>
+                            </div>
+                            <button onClick={() => setIsAddressModalOpen(false)} className="p-2 text-slate-300 hover:text-slate-900 transition-colors">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+                        
+                        <form onSubmit={handleAddressSubmit} className="p-10 space-y-6">
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Flat, House no., Building, Company, Apartment</label>
+                                <input 
+                                    type="text"
+                                    required
+                                    value={addressForm.line1}
+                                    onChange={(e) => setAddressForm({...addressForm, line1: e.target.value})}
+                                    className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:outline-none focus:border-slate-900 transition-all"
+                                    placeholder="e.g. 402, Sunshine Residency"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Town/City</label>
+                                    <input 
+                                        type="text"
+                                        required
+                                        value={addressForm.city}
+                                        onChange={(e) => setAddressForm({...addressForm, city: e.target.value})}
+                                        className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:outline-none focus:border-slate-900 transition-all"
+                                        placeholder="Mumbai"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">State</label>
+                                    <select 
+                                        required
+                                        value={addressForm.state}
+                                        onChange={(e) => setAddressForm({...addressForm, state: e.target.value})}
+                                        className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:outline-none focus:border-slate-900 transition-all appearance-none cursor-pointer"
+                                    >
+                                        {INDIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pincode</label>
+                                    <input 
+                                        type="text"
+                                        required
+                                        pattern="[0-9]{6}"
+                                        maxLength="6"
+                                        value={addressForm.zipCode}
+                                        onChange={(e) => setAddressForm({...addressForm, zipCode: e.target.value})}
+                                        className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:outline-none focus:border-slate-900 transition-all"
+                                        placeholder="400001"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Contact Number</label>
+                                    <input 
+                                        type="tel"
+                                        required
+                                        pattern="[0-9]{10}"
+                                        maxLength="10"
+                                        value={addressForm.phone}
+                                        onChange={(e) => setAddressForm({...addressForm, phone: e.target.value})}
+                                        className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:outline-none focus:border-slate-900 transition-all"
+                                        placeholder="9876543210"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex gap-4 pt-4">
+                                <button 
+                                    type="button"
+                                    onClick={() => setIsAddressModalOpen(false)}
+                                    className="flex-1 px-8 py-4 border border-slate-200 text-slate-400 rounded-2xl text-[11px] font-bold uppercase tracking-widest hover:border-slate-900 hover:text-slate-900 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit"
+                                    className="flex-1 px-8 py-4 bg-slate-900 text-white rounded-2xl text-[11px] font-bold uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 active:scale-95"
+                                >
+                                    Confirm & Pay
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

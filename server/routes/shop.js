@@ -65,4 +65,19 @@ router.get('/products/:id', async (req, res) => {
     }
 });
 
+const Order = require('../models/Order');
+
+// @route   GET api/shop/my-orders
+// @desc    Get current user's orders
+// @access  Private
+router.get('/my-orders', auth, async (req, res) => {
+    try {
+        const orders = await Order.find({ user: req.user.id }).sort({ createdAt: -1 });
+        res.json(orders);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
 module.exports = router;

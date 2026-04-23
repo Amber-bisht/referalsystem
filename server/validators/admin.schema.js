@@ -3,12 +3,12 @@ const { z } = require('zod');
 const productSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   slug: z.string().optional(),
-  price: z.number().nonnegative(),
-  originalPrice: z.number().nonnegative().optional(),
-  commissionPercentage: z.number().min(1, 'Minimum 1%').max(50, 'Maximum 50%'),
+  price: z.coerce.number().nonnegative(),
+  originalPrice: z.coerce.number().nonnegative().optional(),
+  commissionPercentage: z.coerce.number().min(1, 'Minimum 1%').max(50, 'Maximum 50%'),
   description: z.string().optional(),
   imageUrl: z.string().url('Invalid image URL').optional().or(z.string().length(0)),
-  stock: z.number().int().nonnegative(),
+  stock: z.coerce.number().int().nonnegative(),
   category: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid Category ID').optional().or(z.string().length(0))
 });
 

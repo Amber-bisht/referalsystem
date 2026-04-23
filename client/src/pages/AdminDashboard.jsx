@@ -21,6 +21,7 @@ const AdminDashboard = () => {
     const [newCategory, setNewCategory] = useState({ name: '' });
     const [newBanner, setNewBanner] = useState({ title: '', description: '', imageUrl: '', productSlug: '', isActive: true });
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [editingOrder, setEditingOrder] = useState(null);
 
     useEffect(() => {
         fetchData();
@@ -120,11 +121,25 @@ const AdminDashboard = () => {
     const handleUpdateProduct = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`/admin/products/${editingProduct._id}`, editingProduct);
+            // Prepare data: only send fields the backend expects and ensure category is just an ID
+            const payload = {
+                name: editingProduct.name,
+                slug: editingProduct.slug,
+                price: editingProduct.price,
+                originalPrice: editingProduct.originalPrice,
+                commissionPercentage: editingProduct.commissionPercentage,
+                description: editingProduct.description,
+                imageUrl: editingProduct.imageUrl,
+                stock: editingProduct.stock,
+                category: typeof editingProduct.category === 'object' ? editingProduct.category._id : editingProduct.category
+            };
+
+            await axios.put(`/admin/products/${editingProduct._id}`, payload);
             setEditingProduct(null);
             fetchData();
         } catch (err) {
             console.error('Error updating product', err);
+            alert('Failed to update product: ' + (err.response?.data?.msg || err.message));
         }
     };
 
@@ -135,6 +150,18 @@ const AdminDashboard = () => {
             fetchData();
         } catch (err) {
             console.error('Error deleting product', err);
+        }
+    };
+
+    const handleUpdateOrder = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.put(`/admin/orders/${editingOrder._id}`, editingOrder);
+            setEditingOrder(null);
+            fetchData();
+        } catch (err) {
+            console.error('Error updating order', err);
+            alert('Failed to update order');
         }
     };
 
@@ -221,30 +248,56 @@ const AdminDashboard = () => {
                                 )}
 
                                 {activeTab === 'orders' && (
-                                    <table className="w-full text-left text-sm">
-                                        <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 font-medium">
-                                            <tr>
-                                                <th className="px-6 py-3 font-semibold text-center">Receipt ID</th>
-                                                <th className="px-6 py-3 font-semibold">Customer</th>
-                                                <th className="px-6 py-3 font-semibold">Product</th>
-                                                <th className="px-6 py-3 font-semibold">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-50">
-                                            {data.orders.map(o => (
-                                                <tr key={o._id} className="hover:bg-slate-50/50 transition-colors">
-                                                    <td className="px-6 py-4 text-slate-500 text-xs font-mono">{o.razorpayOrderId?.slice(-8)}</td>
-                                                    <td className="px-6 py-4 font-medium">{o.user.email}</td>
-                                                    <td className="px-6 py-4 font-bold text-slate-600">₹{o.price} <span className="text-xs font-normal ml-1">({o.productName})</span></td>
-                                                    <td className="px-6 py-4 text-center">
-                                                        <span className="px-2 py-1 rounded-none text-[10px] font-black bg-emerald-600 text-white uppercase tracking-widest italic">
-                                                            ISSUED
-                                                        </span>
-                                                    </td>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left text-sm">
+                                            <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 font-medium">
+                                                <tr>
+                                                    <th className="px-6 py-3 font-semibold">Order Details</th>
+                                                    <th className="px-6 py-3 font-semibold">Customer & Delivery</th>
+                                                    <th className="px-6 py-3 font-semibold">Status</th>
+                                                    <th className="px-6 py-3 font-semibold text-right">Actions</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-50">
+                                                {data.orders.map(o => (
+                                                    <tr key={o._id} className="hover:bg-slate-50/50 transition-colors">
+                                                        <td className="px-6 py-4">
+                                                            <div className="font-bold text-slate-900">{o.productName}</div>
+                                                            <div className="text-[10px] text-slate-400 font-mono mt-1 uppercase tracking-tighter">ID: {o.paymentId}</div>
+                                                            <div className="text-xs font-bold text-slate-700 mt-1">₹{o.amount.toLocaleString()} • {o.paymentMethod}</div>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <div className="font-medium text-slate-900">{o.user?.email || 'Unknown User'}</div>
+                                                            <div className="text-xs text-slate-500 mt-1 max-w-[200px] leading-tight">
+                                                                <span className="font-bold text-slate-400">ADDR:</span> {o.shippingAddress || 'N/A'}
+                                                            </div>
+                                                            <div className="text-xs text-slate-500 mt-0.5">
+                                                                <span className="font-bold text-slate-400">PH:</span> {o.phoneNumber || 'N/A'}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest text-white ${
+                                                                o.status === 'Confirmed' ? 'bg-blue-500' :
+                                                                o.status === 'Processing' ? 'bg-amber-500' :
+                                                                o.status === 'Delivering' ? 'bg-indigo-500' :
+                                                                'bg-emerald-500'
+                                                            }`}>
+                                                                {o.status}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-right">
+                                                            <button 
+                                                                onClick={() => setEditingOrder(o)}
+                                                                className="text-[10px] font-bold text-slate-400 hover:text-slate-900 uppercase tracking-widest"
+                                                            >
+                                                                Edit Details
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 )}
 
                                 {activeTab === 'withdrawals' && (
@@ -382,7 +435,7 @@ const AdminDashboard = () => {
                                                             </div>
                                                         </div>
                                                         <div className="flex gap-3">
-                                                            <button onClick={() => setEditingProduct(p)} className="text-[10px] font-bold text-slate-400 hover:text-slate-900 uppercase">Edit</button>
+                                                            <button onClick={() => setEditingProduct({ ...p, category: p.category?._id || p.category })} className="text-[10px] font-bold text-slate-400 hover:text-slate-900 uppercase">Edit</button>
                                                             <button onClick={() => handleDeleteProduct(p._id)} className="text-[10px] font-bold text-red-400 hover:text-red-600 uppercase">Delete</button>
                                                         </div>
                                                     </div>
@@ -396,6 +449,72 @@ const AdminDashboard = () => {
                     )}
                 </div>
             </main>
+
+            {/* Edit Order Modal */}
+            {editingOrder && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
+                            <h3 className="text-xl font-bold text-slate-900">Update Order</h3>
+                            <button onClick={() => setEditingOrder(null)} className="text-slate-400 hover:text-slate-600">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+                        <form onSubmit={handleUpdateOrder} className="p-8 space-y-6">
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Delivery Status</label>
+                                <select 
+                                    value={editingOrder.status}
+                                    onChange={(e) => setEditingOrder({...editingOrder, status: e.target.value})}
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
+                                >
+                                    <option value="Confirmed">Confirmed</option>
+                                    <option value="Processing">Processing</option>
+                                    <option value="Delivering">Delivering</option>
+                                    <option value="Delivered">Delivered</option>
+                                </select>
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Shipping Address</label>
+                                <textarea 
+                                    value={editingOrder.shippingAddress}
+                                    onChange={(e) => setEditingOrder({...editingOrder, shippingAddress: e.target.value})}
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium h-24 focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
+                                    placeholder="Enter full shipping address"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Phone Number</label>
+                                <input 
+                                    type="text"
+                                    value={editingOrder.phoneNumber}
+                                    onChange={(e) => setEditingOrder({...editingOrder, phoneNumber: e.target.value})}
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
+                                    placeholder="Contact number"
+                                />
+                            </div>
+
+                            <div className="flex gap-4 pt-2">
+                                <button 
+                                    type="button"
+                                    onClick={() => setEditingOrder(null)}
+                                    className="flex-1 px-6 py-3 border border-slate-100 text-slate-500 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-slate-50 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit"
+                                    className="flex-1 px-6 py-3 bg-slate-900 text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-slate-200"
+                                >
+                                    Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

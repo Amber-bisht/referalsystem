@@ -75,7 +75,7 @@ const Dashboard = () => {
                 key: import.meta.env.VITE_RAZORPAY_KEY_ID,
                 amount: order.amount,
                 currency: order.currency,
-                name: "referal.amberbisht.me",
+                name: "Games Store",
                 description: `Purchase ${product.name}`,
                 order_id: order.id,
                 handler: async function (response) {
@@ -102,6 +102,7 @@ const Dashboard = () => {
                 prefill: {
                     name: user?.email || "",
                     email: user?.email || "",
+                    contact: user?.phone || ""
                 },
                 theme: {
                     color: "#0f172a"
@@ -140,8 +141,8 @@ const Dashboard = () => {
             
             <div className="container mx-auto px-4 py-8 max-w-7xl">
                 <header className="mb-12">
-                    <h1 className="text-3xl font-bold text-slate-900 mb-2">Gift Card Store</h1>
-                    <p className="text-slate-500 text-sm font-medium">Browse and purchase premium vouchers from leading brands.</p>
+                    <h1 className="text-3xl font-bold text-slate-900 mb-2">Games Store</h1>
+                    <p className="text-slate-500 text-sm font-medium">Browse and purchase premium games. We deliver right to your doorstep.</p>
                 </header>
 
                 {message && (
@@ -196,11 +197,11 @@ const Dashboard = () => {
                             <div className="p-6 flex-1 flex flex-col">
                                 <div className="flex justify-between items-start mb-2 gap-2">
                                     <h3 className="text-lg font-bold text-slate-900 tracking-tight leading-tight group-hover:text-slate-700 transition-colors">{product.name}</h3>
-                                    <span className="flex-shrink-0 px-2 py-0.5 bg-slate-50 border border-slate-100 text-slate-400 text-[9px] font-bold uppercase tracking-widest rounded-md">Gift Card</span>
+                                    <span className="flex-shrink-0 px-2 py-0.5 bg-slate-50 border border-slate-100 text-slate-400 text-[9px] font-bold uppercase tracking-widest rounded-md">Game</span>
                                 </div>
                                 
                                 <p className="text-slate-500 text-xs font-medium leading-relaxed mb-6 line-clamp-2 h-8">
-                                    Instant delivery to your email after successful purchase.
+                                    Safe and reliable delivery to your address.
                                 </p>
 
                                 <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
@@ -284,9 +285,9 @@ const Dashboard = () => {
                                     <div className="p-6 flex-1 flex flex-col">
                                         <div className="flex justify-between items-start mb-2 gap-2">
                                             <h3 className="text-lg font-bold text-slate-900 tracking-tight leading-tight group-hover:text-slate-700 transition-colors">{product.name}</h3>
-                                            <span className="flex-shrink-0 px-2 py-0.5 bg-slate-50 border border-slate-100 text-slate-400 text-[9px] font-bold uppercase tracking-widest rounded-md">Voucher</span>
+                                            <span className="flex-shrink-0 px-2 py-0.5 bg-slate-50 border border-slate-100 text-slate-400 text-[9px] font-bold uppercase tracking-widest rounded-md">Game</span>
                                         </div>
-                                        <p className="text-slate-500 text-xs font-medium leading-relaxed mb-6 line-clamp-2 h-8">Instant delivery to your email after successful purchase.</p>
+                                        <p className="text-slate-500 text-xs font-medium leading-relaxed mb-6 line-clamp-2 h-8">Safe and reliable delivery to your address.</p>
                                         <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
                                             <div className="flex flex-col">
                                                 <div className="flex items-baseline gap-2">

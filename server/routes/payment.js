@@ -5,8 +5,9 @@ const crypto = require('crypto');
 const auth = require('../middleware/auth');
 const Product = require('../models/Product');
 const User = require('../models/User');
+const Order = require('../models/Order');
 const mongoose = require('mongoose');
-const { createOrderSchema, verifyPaymentSchema, withdrawSchema } = require('../validators/payment.schema');
+const { createOrderSchema, verifyPaymentSchema, withdrawSchema, payWithWalletSchema } = require('../validators/payment.schema');
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -19,7 +20,7 @@ const razorpay = new Razorpay({
 router.post('/create-order', auth, async (req, res) => {
     const validation = createOrderSchema.safeParse(req.body);
     if (!validation.success) {
-        return res.status(400).json({ msg: validation.error.errors[0].message });
+        return res.status(400).json({ msg: validation.error.issues[0].message });
     }
 
     const { productId } = validation.data;
@@ -31,7 +32,7 @@ router.post('/create-order', auth, async (req, res) => {
         }
 
         if (product.stock <= 0) {
-            return res.status(400).json({ msg: 'This voucher is currently out of stock' });
+            return res.status(400).json({ msg: 'This product is currently out of stock' });
         }
 
         const options = {
@@ -58,7 +59,7 @@ router.post('/create-order', auth, async (req, res) => {
 router.post('/verify', auth, async (req, res) => {
     const validation = verifyPaymentSchema.safeParse(req.body);
     if (!validation.success) {
-        return res.status(400).json({ msg: validation.error.errors[0].message });
+        return res.status(400).json({ msg: validation.error.issues[0].message });
     }
 
     const {
@@ -100,7 +101,23 @@ router.post('/verify', auth, async (req, res) => {
         // Generate unique voucher code
         const voucherCode = `${product.name.substring(0, 3).toUpperCase()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
 
-        // Save Purchase History
+        // Save Order
+        const newOrder = new Order({
+            user: buyer._id,
+            product: product._id,
+            productName: product.name,
+            productImage: product.imageUrl,
+            amount: product.price,
+            paymentMethod: 'Razorpay',
+            paymentId: razorpay_payment_id,
+            razorpayOrderId: razorpay_order_id,
+            status: 'Confirmed',
+            shippingAddress: buyer.address && buyer.address.line1 ? `${buyer.address.line1}, ${buyer.address.city}, ${buyer.address.state} - ${buyer.address.zipCode}` : 'Address not provided',
+            phoneNumber: buyer.phone || 'Phone not provided'
+        });
+        await newOrder.save({ session });
+
+        // Save to Purchase History (for backward compatibility if needed)
         buyer.purchaseHistory.push({
             productId: product._id,
             productName: product.name,
@@ -108,7 +125,7 @@ router.post('/verify', auth, async (req, res) => {
             price: product.price,
             razorpayOrderId: razorpay_order_id,
             razorpayPaymentId: razorpay_payment_id,
-            voucherCode
+            status: 'Confirmed'
         });
         await buyer.save({ session });
 
@@ -173,13 +190,135 @@ router.post('/verify', auth, async (req, res) => {
     }
 });
 
+// @route   POST api/payment/pay-with-wallet
+// @desc    Purchase product using referral balance
+// @access  Private
+router.post('/pay-with-wallet', auth, async (req, res) => {
+    const validation = payWithWalletSchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ msg: validation.error.issues[0].message });
+    }
+
+    const { productId } = validation.data;
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        const product = await Product.findById(productId).session(session);
+        if (!product) {
+            await session.abortTransaction();
+            return res.status(404).json({ msg: 'Product not found' });
+        }
+
+        if (product.stock <= 0) {
+            await session.abortTransaction();
+            return res.status(400).json({ msg: 'Product out of stock' });
+        }
+
+        const buyer = await User.findById(req.user.id).session(session);
+        if (!buyer) {
+            await session.abortTransaction();
+            return res.status(404).json({ msg: 'User not found' });
+        }
+
+        const currentBalance = buyer.earnings.total - (buyer.earnings.withdrawn || 0);
+        if (currentBalance < product.price) {
+            await session.abortTransaction();
+            return res.status(400).json({ msg: 'Insufficient referral balance' });
+        }
+
+        // Deduct balance
+        buyer.earnings.withdrawn = (buyer.earnings.withdrawn || 0) + product.price;
+
+        // Generate Transaction ID
+        const transactionId = `WAL-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+
+        // Create Order
+        const newOrder = new Order({
+            user: buyer._id,
+            product: product._id,
+            productName: product.name,
+            productImage: product.imageUrl,
+            amount: product.price,
+            paymentMethod: 'Wallet',
+            paymentId: transactionId,
+            status: 'Confirmed',
+            shippingAddress: buyer.address && buyer.address.line1 ? `${buyer.address.line1}, ${buyer.address.city}, ${buyer.address.state} - ${buyer.address.zipCode}` : 'Address not provided',
+            phoneNumber: buyer.phone || 'Phone not provided'
+        });
+        await newOrder.save({ session });
+
+        // Save to Purchase History
+        buyer.purchaseHistory.push({
+            productId: product._id,
+            productName: product.name,
+            productImage: product.imageUrl,
+            price: product.price,
+            status: 'Confirmed'
+        });
+        await buyer.save({ session });
+
+        // Decrement Stock
+        product.stock = Math.max(0, product.stock - 1);
+        await product.save({ session });
+
+        // Commission Distribution
+        if (product.price >= 10 && product.commissionPercentage > 0) {
+            const directEarnings = product.price * (product.commissionPercentage / 100);
+            const indirectEarnings = directEarnings * 0.10;
+
+            if (buyer.referredBy) {
+                const level1Parent = await User.findById(buyer.referredBy).session(session);
+                if (level1Parent) {
+                    level1Parent.earnings.direct += directEarnings;
+                    level1Parent.earnings.total += directEarnings;
+                    level1Parent.earningHistory.push({
+                        amount: directEarnings,
+                        fromUser: buyer._id,
+                        fromUserEmail: buyer.email,
+                        productName: product.name,
+                        level: 1
+                    });
+                    await level1Parent.save({ session });
+
+                    if (level1Parent.referredBy) {
+                        const level2Parent = await User.findById(level1Parent.referredBy).session(session);
+                        if (level2Parent) {
+                            level2Parent.earnings.indirect += indirectEarnings;
+                            level2Parent.earnings.total += indirectEarnings;
+                            level2Parent.earningHistory.push({
+                                amount: indirectEarnings,
+                                fromUser: buyer._id,
+                                fromUserEmail: buyer.email,
+                                productName: product.name,
+                                level: 2
+                            });
+                            await level2Parent.save({ session });
+                        }
+                    }
+                }
+            }
+        }
+
+        await session.commitTransaction();
+        res.json({ success: true, msg: 'Purchase successful using wallet balance' });
+    } catch (err) {
+        await session.abortTransaction();
+        console.error(err);
+        res.status(500).send('Server Error');
+    } finally {
+        session.endSession();
+    }
+});
+
 // @route   POST api/payment/withdraw
 // @desc    Process fake withdrawal (Redeem Coupon)
 // @access  Private
 router.post('/withdraw', auth, async (req, res) => {
     const validation = withdrawSchema.safeParse(req.body);
     if (!validation.success) {
-        return res.status(400).json({ msg: validation.error.errors[0].message });
+        return res.status(400).json({ msg: validation.error.issues[0].message });
     }
 
     const { amount, brand } = validation.data;

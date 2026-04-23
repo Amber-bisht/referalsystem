@@ -6,6 +6,7 @@ const User = require('../models/User');
 const Product = require('../models/Product');
 const Category = require('../models/Category');
 const Banner = require('../models/Banner');
+const Order = require('../models/Order');
 const { productSchema, categorySchema, bannerSchema } = require('../validators/admin.schema');
 
 // Apply auth and admin middleware to all routes in this file
@@ -27,22 +28,41 @@ router.get('/users', async (req, res) => {
 // @desc    Get all orders across all users
 router.get('/orders', async (req, res) => {
     try {
-        const users = await User.find().select('email purchaseHistory');
-        let allOrders = [];
-        users.forEach(user => {
-            user.purchaseHistory.forEach(order => {
-                allOrders.push({
-                    ...order.toObject(),
-                    user: {
-                        id: user._id,
-                        email: user.email
-                    }
-                });
-            });
-        });
-        // Sort by date descending
-        allOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
-        res.json(allOrders);
+        const orders = await Order.find().populate('user', 'email').sort({ createdAt: -1 });
+        res.json(orders);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   PUT api/admin/orders/:id
+// @desc    Update order details (status, address, phone)
+router.put('/orders/:id', async (req, res) => {
+    const { status, shippingAddress, phoneNumber } = req.body;
+    
+    const updateData = {};
+    if (status) {
+        if (!['Confirmed', 'Processing', 'Delivering', 'Delivered'].includes(status)) {
+            return res.status(400).json({ msg: 'Invalid status' });
+        }
+        updateData.status = status;
+    }
+    if (shippingAddress) updateData.shippingAddress = shippingAddress;
+    if (phoneNumber) updateData.phoneNumber = phoneNumber;
+
+    try {
+        const order = await Order.findByIdAndUpdate(
+            req.params.id,
+            { $set: updateData },
+            { new: true }
+        ).populate('user', 'email');
+        
+        if (!order) {
+            return res.status(404).json({ msg: 'Order not found' });
+        }
+
+        res.json(order);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
@@ -94,7 +114,7 @@ router.get('/categories', async (req, res) => {
 router.post('/categories', async (req, res) => {
     const validation = categorySchema.safeParse(req.body);
     if (!validation.success) {
-        return res.status(400).json({ msg: validation.error.errors[0].message });
+        return res.status(400).json({ msg: validation.error.issues[0].message });
     }
 
     const { name } = validation.data;
@@ -140,7 +160,7 @@ router.get('/banners', async (req, res) => {
 router.post('/banners', async (req, res) => {
     const validation = bannerSchema.safeParse(req.body);
     if (!validation.success) {
-        return res.status(400).json({ msg: validation.error.errors[0].message });
+        return res.status(400).json({ msg: validation.error.issues[0].message });
     }
 
     try {
@@ -158,7 +178,7 @@ router.post('/banners', async (req, res) => {
 router.put('/banners/:id', async (req, res) => {
     const validation = bannerSchema.safeParse(req.body);
     if (!validation.success) {
-        return res.status(400).json({ msg: validation.error.errors[0].message });
+        return res.status(400).json({ msg: validation.error.issues[0].message });
     }
 
     try {
@@ -193,7 +213,7 @@ router.delete('/banners/:id', async (req, res) => {
 router.post('/products', async (req, res) => {
     const validation = productSchema.safeParse(req.body);
     if (!validation.success) {
-        return res.status(400).json({ msg: validation.error.errors[0].message });
+        return res.status(400).json({ msg: validation.error.issues[0].message });
     }
 
     let { name, slug } = validation.data;
@@ -215,7 +235,7 @@ router.post('/products', async (req, res) => {
 router.put('/products/:id', async (req, res) => {
     const validation = productSchema.safeParse(req.body);
     if (!validation.success) {
-        return res.status(400).json({ msg: validation.error.errors[0].message });
+        return res.status(400).json({ msg: validation.error.issues[0].message });
     }
 
     let { name, slug } = validation.data;
