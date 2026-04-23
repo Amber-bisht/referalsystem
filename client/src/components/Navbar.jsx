@@ -60,7 +60,7 @@ const Navbar = () => {
                                 )}
                             </Link>
                             <Link to="/login" className="text-[11px] font-bold text-slate-500 hover:text-slate-900 uppercase tracking-widest transition-colors">Login</Link>
-                            <Link to="/signup" className="px-5 py-2.5 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-[0.2em] hover:bg-black transition-all active:scale-95 shadow-sm">login</Link>
+                            <Link to="/signup" className="px-5 py-2.5 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-[0.2em] hover:bg-black transition-all active:scale-95 shadow-sm">Sign Up</Link>
                         </>
                     )}
                 </div>
