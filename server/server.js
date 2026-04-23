@@ -8,10 +8,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
-const authRoutes = require('./routes/auth');
-const shopRoutes = require('./routes/shop');
-const paymentRoutes = require('./routes/payment');
-const adminRoutes = require('./routes/admin');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -77,10 +73,18 @@ app.get('/', (req, res) => {
     });
 });
 
+const authRoutes = require('./routes/auth');
+const shopRoutes = require('./routes/shop');
+const paymentRoutes = require('./routes/payment');
+const adminRoutes = require('./routes/admin');
+const userRoutes = require('./routes/user');
+
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/shop', shopRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/user', userRoutes);
 
 // Server Startup
 const startServer = async () => {

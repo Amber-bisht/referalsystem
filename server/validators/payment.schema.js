@@ -24,7 +24,8 @@ const createCartOrderSchema = z.object({
   items: z.array(z.object({
     productId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid Product ID'),
     quantity: z.number().min(1)
-  })).min(1, 'Cart is empty')
+  })).min(1, 'Cart is empty'),
+  addressId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid Address ID')
 });
 
 const verifyCartPaymentSchema = z.object({
@@ -34,7 +35,8 @@ const verifyCartPaymentSchema = z.object({
   items: z.array(z.object({
     productId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid Product ID'),
     quantity: z.number().min(1)
-  }))
+  })),
+  addressId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid Address ID')
 });
 
 module.exports = {

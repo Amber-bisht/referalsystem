@@ -443,7 +443,8 @@ router.post('/verify-cart', auth, async (req, res) => {
         razorpay_order_id,
         razorpay_payment_id,
         razorpay_signature,
-        items
+        items,
+        addressId
     } = validation.data;
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
@@ -463,8 +464,11 @@ router.post('/verify-cart', auth, async (req, res) => {
         const buyer = await User.findById(req.user.id).session(session);
         if (!buyer) throw new Error('User not found');
 
-        const shippingAddress = buyer.address && buyer.address.line1 ? `${buyer.address.line1}, ${buyer.address.city}, ${buyer.address.state} - ${buyer.address.zipCode}` : 'Address not provided';
-        const phoneNumber = buyer.phone || 'Phone not provided';
+        const selectedAddr = buyer.addresses.id(addressId);
+        if (!selectedAddr) throw new Error('Shipping address not found');
+
+        const shippingAddress = `${selectedAddr.line1}, ${selectedAddr.city}, ${selectedAddr.state} - ${selectedAddr.zipCode}`;
+        const phoneNumber = selectedAddr.phone;
 
         for (const item of items) {
             const product = await Product.findById(item.productId).session(session);
