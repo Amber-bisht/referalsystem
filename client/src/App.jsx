@@ -60,11 +60,14 @@ const AppContent = () => {
                             <Referrals />
                         </ProtectedRoute>
                     } />
-                    <Route path="/my-purchases" element={
+import Cart from './pages/Cart';
+
+                    <Route path="/cart" element={
                         <ProtectedRoute>
-                            <MyPurchases />
+                            <Cart />
                         </ProtectedRoute>
                     } />
+                    <Route path="/my-purchases" element={
 
                     {/* Global slug handler - must be last */}
                     <Route path="/:id" element={<ProductDetail />} />

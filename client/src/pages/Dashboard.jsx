@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import SuccessModal from '../components/SuccessModal';
 import HeroBanner from '../components/HeroBanner';
+import { useCart } from '../context/CartContext';
 
 const Dashboard = () => {
     const [banners, setBanners] = useState([]);
@@ -16,6 +17,7 @@ const Dashboard = () => {
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [purchasedProduct, setPurchasedProduct] = useState(null);
     const { user, refreshUser } = useAuth();
+    const { addToCart } = useCart();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -219,17 +221,29 @@ const Dashboard = () => {
                                         </div>
                                     </div>
 
-                                    <button
-                                        onClick={(e) => handlePurchase(e, product)}
-                                        disabled={product.stock <= 0}
-                                        className={`px-6 py-3 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all active:scale-95 shadow-md z-10 ${
-                                            product.stock <= 0 
-                                            ? 'bg-slate-50 text-slate-300 border border-slate-100 cursor-not-allowed shadow-none' 
-                                            : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200'
-                                        }`}
-                                    >
-                                        {product.stock <= 0 ? 'Out of Stock' : 'Buy Now'}
-                                    </button>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                addToCart(product);
+                                            }}
+                                            disabled={product.stock <= 0}
+                                            className="p-3 bg-white border border-slate-100 rounded-lg text-slate-900 hover:border-slate-900 transition-all active:scale-95 disabled:opacity-30"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                                        </button>
+                                        <button
+                                            onClick={(e) => handlePurchase(e, product)}
+                                            disabled={product.stock <= 0}
+                                            className={`flex-1 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 z-10 ${
+                                                product.stock <= 0 
+                                                ? 'bg-slate-50 text-slate-300 border border-slate-100 cursor-not-allowed' 
+                                                : 'bg-slate-900 text-white hover:bg-black shadow-lg shadow-slate-100'
+                                            }`}
+                                        >
+                                            {product.stock <= 0 ? 'Empty' : 'Buy Now'}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </Link>

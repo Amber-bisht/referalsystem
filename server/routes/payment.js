@@ -7,7 +7,14 @@ const Product = require('../models/Product');
 const User = require('../models/User');
 const Order = require('../models/Order');
 const mongoose = require('mongoose');
-const { createOrderSchema, verifyPaymentSchema, withdrawSchema, payWithWalletSchema } = require('../validators/payment.schema');
+const { 
+    createOrderSchema, 
+    verifyPaymentSchema, 
+    withdrawSchema, 
+    payWithWalletSchema,
+    createCartOrderSchema,
+    verifyCartPaymentSchema
+} = require('../validators/payment.schema');
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -370,6 +377,166 @@ router.post('/withdraw', auth, async (req, res) => {
         await session.abortTransaction();
         console.error(err);
         res.status(500).send('Server Error');
+    } finally {
+        session.endSession();
+    }
+});
+
+// @route   POST api/payment/create-cart-order
+// @desc    Create a Razorpay order for multiple items
+// @access  Private
+router.post('/create-cart-order', auth, async (req, res) => {
+    const validation = createCartOrderSchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ msg: validation.error.issues[0].message });
+    }
+
+    const { items } = validation.data;
+
+    try {
+        let totalAmount = 0;
+        const products = await Product.find({ _id: { $in: items.map(i => i.productId) } });
+        
+        if (products.length !== items.length) {
+            return res.status(404).json({ msg: 'One or more products not found' });
+        }
+
+        for (const item of items) {
+            const product = products.find(p => p._id.toString() === item.productId);
+            if (product.stock < item.quantity) {
+                return res.status(400).json({ msg: `Not enough stock for ${product.name}` });
+            }
+            totalAmount += product.price * item.quantity;
+        }
+
+        const options = {
+            amount: Math.round(totalAmount * 100), // Ensure it's an integer
+            currency: 'INR',
+            receipt: `receipt_cart_${crypto.randomBytes(3).toString('hex')}`,
+            notes: {
+                userId: req.user.id,
+                isCart: "true"
+            }
+        };
+
+        const order = await razorpay.orders.create(options);
+        res.json({
+            ...order,
+            amount: totalAmount, // for frontend total display
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   POST api/payment/verify-cart
+// @desc    Verify cart payment and create multiple orders
+// @access  Private
+router.post('/verify-cart', auth, async (req, res) => {
+    const validation = verifyCartPaymentSchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ msg: validation.error.issues[0].message });
+    }
+
+    const {
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature,
+        items
+    } = validation.data;
+
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+    const expectedSignature = crypto
+        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+        .update(body.toString())
+        .digest('hex');
+
+    if (expectedSignature !== razorpay_signature) {
+        return res.status(400).json({ success: false, msg: 'Invalid signature' });
+    }
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        const buyer = await User.findById(req.user.id).session(session);
+        if (!buyer) throw new Error('User not found');
+
+        const shippingAddress = buyer.address && buyer.address.line1 ? `${buyer.address.line1}, ${buyer.address.city}, ${buyer.address.state} - ${buyer.address.zipCode}` : 'Address not provided';
+        const phoneNumber = buyer.phone || 'Phone not provided';
+
+        for (const item of items) {
+            const product = await Product.findById(item.productId).session(session);
+            if (!product) throw new Error(`Product ${item.productId} not found`);
+
+            // Save Order
+            const newOrder = new Order({
+                user: buyer._id,
+                product: product._id,
+                productName: product.name,
+                productImage: product.imageUrl,
+                amount: product.price * item.quantity,
+                quantity: item.quantity,
+                paymentMethod: 'Razorpay',
+                paymentId: razorpay_payment_id,
+                razorpayOrderId: razorpay_order_id,
+                status: 'Confirmed',
+                shippingAddress,
+                phoneNumber
+            });
+            await newOrder.save({ session });
+
+            // Decrement Stock
+            product.stock = Math.max(0, product.stock - item.quantity);
+            await product.save({ session });
+
+            // Commission Distribution
+            if (product.price >= 10 && product.commissionPercentage > 0) {
+                const totalItemPrice = product.price * item.quantity;
+                const directEarnings = totalItemPrice * (product.commissionPercentage / 100);
+                const indirectEarnings = directEarnings * 0.10;
+
+                if (buyer.referredBy) {
+                    const level1Parent = await User.findById(buyer.referredBy).session(session);
+                    if (level1Parent) {
+                        level1Parent.earnings.direct += directEarnings;
+                        level1Parent.earnings.total += directEarnings;
+                        level1Parent.earningHistory.push({
+                            amount: directEarnings,
+                            fromUser: buyer._id,
+                            fromUserEmail: buyer.email,
+                            productName: `${product.name} (x${item.quantity})`,
+                            level: 1
+                        });
+                        await level1Parent.save({ session });
+
+                        if (level1Parent.referredBy) {
+                            const level2Parent = await User.findById(level1Parent.referredBy).session(session);
+                            if (level2Parent) {
+                                level2Parent.earnings.indirect += indirectEarnings;
+                                level2Parent.earnings.total += indirectEarnings;
+                                level2Parent.earningHistory.push({
+                                    amount: indirectEarnings,
+                                    fromUser: buyer._id,
+                                    fromUserEmail: buyer.email,
+                                    productName: `${product.name} (x${item.quantity})`,
+                                    level: 2
+                                });
+                                await level2Parent.save({ session });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        await session.commitTransaction();
+        res.json({ success: true, msg: 'Cart purchase completed successfully.' });
+    } catch (err) {
+        await session.abortTransaction();
+        console.error(err);
+        res.status(500).send(err.message || 'Server Error');
     } finally {
         session.endSession();
     }
