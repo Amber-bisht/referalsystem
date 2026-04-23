@@ -243,10 +243,10 @@ const ProductDetail = () => {
     return (
         <div className="bg-white min-h-screen">
             {/* Header / Breadcrumb Wrap */}
-            <div className="border-b border-slate-50">
+            <div className="border-b border-slate-100">
                 <div className="container mx-auto px-6 py-4 max-w-7xl">
-                    <nav className="flex items-center gap-2 text-[11px] font-bold text-slate-400">
-                        <Link to="/" className="hover:text-slate-900 transition-colors uppercase tracking-widest">Store</Link>
+                    <nav className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                        <Link to="/" className="hover:text-slate-900 transition-colors">Store</Link>
                         <span className="text-slate-200">/</span>
                         <span className="text-slate-900 uppercase tracking-widest">{product.category?.name || "Game"}</span>
                     </nav>
@@ -381,9 +381,9 @@ const ProductDetail = () => {
                             </div>
                         </div>
 
-                        <div className="p-12 bg-white rounded-3xl border border-slate-100 shadow-sm">
-                            <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8">Shipping Terms</h3>
-                            <ul className="space-y-6">
+                        <div className="p-8 bg-white rounded-xl border border-slate-100 shadow-sm">
+                            <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-50 pb-4">Shipping Terms</h3>
+                            <ul className="space-y-5">
                                 {[
                                     "Delivery usually takes 3-7 business days depending on location.",
                                     "Ensure your address and phone number are correct for smooth delivery.",
@@ -391,9 +391,9 @@ const ProductDetail = () => {
                                     "Contact support for any delivery-related queries.",
                                     "Return policy applies for damaged products on arrival."
                                 ].map((term, idx) => (
-                                    <li key={idx} className="flex gap-4 items-start group">
-                                        <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0"></div>
-                                        <span className="text-sm text-slate-600 font-medium leading-relaxed group-hover:text-slate-900 transition-colors">
+                                    <li key={idx} className="flex gap-3 items-start group">
+                                        <div className="mt-1.5 w-1 h-1 rounded-full bg-slate-900 shrink-0"></div>
+                                        <span className="text-xs text-slate-600 font-bold leading-relaxed group-hover:text-slate-900 transition-colors">
                                             {term}
                                         </span>
                                     </li>
@@ -436,18 +436,18 @@ const ProductDetail = () => {
                                 <Link 
                                     key={p._id} 
                                     to={`/${p.slug || p._id}`} 
-                                    className="group block bg-white border border-slate-100 rounded-3xl p-6 hover:shadow-2xl hover:shadow-slate-100 transition-all duration-500"
+                                    className="group block bg-white border border-slate-100 rounded-xl p-5 hover:shadow-xl hover:shadow-slate-50 transition-all duration-500"
                                 >
-                                    <div className="aspect-[16/10] bg-slate-50 rounded-2xl mb-6 flex items-center justify-center p-6 overflow-hidden">
+                                    <div className="aspect-[16/10] bg-slate-50 rounded-lg mb-5 flex items-center justify-center p-5 overflow-hidden">
                                         <img 
                                             src={p.imageUrl} 
                                             alt={p.name} 
-                                            className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" 
+                                            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500" 
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <h4 className="text-lg font-bold text-slate-900 leading-tight group-hover:text-slate-600 transition-colors">{p.name}</h4>
-                                        <div className="flex items-center justify-between pt-2">
+                                    <div className="space-y-1.5">
+                                        <h4 className="text-sm font-black text-slate-900 leading-tight group-hover:text-slate-600 transition-colors">{p.name}</h4>
+                                        <div className="flex items-center justify-between pt-1">
                                             <span className="text-xl font-black text-slate-900">₹{p.price.toLocaleString()}</span>
                                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Buy Details</span>
                                         </div>

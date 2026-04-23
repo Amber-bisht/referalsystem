@@ -179,7 +179,7 @@ const AdminDashboard = () => {
             <main className="flex-1 flex flex-col overflow-hidden bg-slate-50/30">
                 {/* Mobile Header */}
                 <header className="lg:hidden flex items-center justify-between px-6 py-4 bg-white border-b border-slate-100">
-                    <div className="text-lg font-bold tracking-tight">referal.amberbish</div>
+                    <div className="text-lg font-black tracking-tighter uppercase">referalsystem</div>
                     <button 
                         onClick={() => setSidebarOpen(true)}
                         className="p-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors"
@@ -196,21 +196,21 @@ const AdminDashboard = () => {
                     ) : (
                         <div className="max-w-6xl mx-auto">
                             {/* Summary row */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
                                 {[
                                     { label: 'Users', val: data.users.length },
                                     { label: 'Orders', val: data.orders.length },
                                     { label: 'Redemptions', val: data.withdrawals.length },
                                     { label: 'Inventory', val: data.products.length }
                                 ].map((stat, i) => (
-                                    <div key={i} className="p-4 rounded-xl bg-slate-50 border border-slate-100">
-                                        <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">{stat.label}</p>
-                                        <p className="text-xl font-bold">{stat.val}</p>
+                                    <div key={i} className="p-3 rounded-lg bg-white border border-slate-100">
+                                        <p className="text-[9px] uppercase tracking-wider text-slate-400 font-bold mb-0.5">{stat.label}</p>
+                                        <p className="text-lg font-black text-slate-900">{stat.val}</p>
                                     </div>
                                 ))}
                             </div>
 
-                            <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+                            <div className="bg-white rounded-lg border border-slate-100 shadow-sm overflow-hidden">
                                 {activeTab === 'users' && (
                                     <table className="w-full text-left text-sm">
                                         <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 font-medium">
@@ -262,9 +262,9 @@ const AdminDashboard = () => {
                                                 {data.orders.map(o => (
                                                     <tr key={o._id} className="hover:bg-slate-50/50 transition-colors">
                                                         <td className="px-6 py-4">
-                                                            <div className="font-bold text-slate-900">{o.productName}</div>
-                                                            <div className="text-[10px] text-slate-400 font-mono mt-1 uppercase tracking-tighter">ID: {o.paymentId}</div>
-                                                            <div className="text-xs font-bold text-slate-700 mt-1">₹{o.amount.toLocaleString()} • {o.paymentMethod}</div>
+                                                            <div className="font-bold text-slate-900 text-xs">{o.productName}</div>
+                                                            <div className="text-[9px] text-slate-400 font-mono mt-1 uppercase tracking-tight">ID: {o.paymentId}</div>
+                                                            <div className="text-[10px] font-black text-slate-900 mt-1">₹{o.amount.toLocaleString()} • {o.paymentMethod === 'Wallet' ? 'Wallet' : 'Online'}</div>
                                                         </td>
                                                         <td className="px-6 py-4">
                                                             <div className="font-medium text-slate-900">{o.user?.email || 'Unknown User'}</div>

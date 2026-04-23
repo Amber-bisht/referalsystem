@@ -26,6 +26,8 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
+import { CartProvider } from './context/CartContext';
+
 const AppContent = () => {
     const location = useLocation();
     const isAdmin = location.pathname.startsWith('/admin');
@@ -75,7 +77,9 @@ const AppContent = () => {
 export default () => (
     <BrowserRouter>
         <AuthProvider>
-            <AppContent />
+            <CartProvider>
+                <AppContent />
+            </CartProvider>
         </AuthProvider>
     </BrowserRouter>
 );

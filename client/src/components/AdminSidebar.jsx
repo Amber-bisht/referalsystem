@@ -26,10 +26,10 @@ const AdminSidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen, onLogout }) 
 
             <aside className={`${isOpen ? 'translate-x-0' : '-translate-x-full'} fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-100 transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 flex flex-col shadow-2xl shadow-slate-200/50 lg:shadow-none`}>
                 {/* Logo Section */}
-                <div className="p-8 pb-6">
-                    <Link to="/" className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                        <div className="w-2 h-8 bg-slate-900"></div>
-                        <span>referal.amberbisht</span>
+                <div className="p-8 pb-4">
+                    <Link to="/" className="text-xl font-black text-slate-900 tracking-tighter flex items-center gap-2 uppercase">
+                        <div className="w-1.5 h-6 bg-slate-900"></div>
+                        <span>referalsystem</span>
                     </Link>
                 </div>
 
@@ -42,7 +42,7 @@ const AdminSidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen, onLogout }) 
                                 setActiveTab(item.id);
                                 if (window.innerWidth < 1024) setIsOpen(false);
                             }}
-                            className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 group relative ${
+                            className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-lg transition-all duration-200 group relative ${
                                 activeTab === item.id 
                                     ? 'bg-slate-50 text-slate-900' 
                                     : 'text-slate-400 hover:bg-slate-50/50 hover:text-slate-600'
@@ -65,7 +65,7 @@ const AdminSidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen, onLogout }) 
                 <div className="p-6 border-t border-slate-50">
                     <button 
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-red-500 transition-all text-sm font-bold bg-slate-50/50 hover:bg-red-50 rounded-xl active:scale-95 group"
+                        className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-red-500 transition-all text-sm font-bold bg-slate-50/50 hover:bg-red-50 rounded-lg active:scale-95 group"
                     >
                         <svg className="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                         Logout
