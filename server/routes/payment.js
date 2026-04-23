@@ -264,6 +264,15 @@ router.post('/pay-with-wallet', auth, async (req, res) => {
             price: product.price,
             status: 'Confirmed'
         });
+
+        // Record in withdrawal history for earnings log
+        buyer.withdrawalHistory.push({
+            amount: product.price,
+            brand: product.name,
+            couponCode: transactionId,
+            date: new Date()
+        });
+
         await buyer.save({ session });
 
         // Decrement Stock
@@ -309,7 +318,12 @@ router.post('/pay-with-wallet', auth, async (req, res) => {
         }
 
         await session.commitTransaction();
-        res.json({ success: true, msg: 'Purchase successful using wallet balance' });
+        res.json({ 
+            success: true, 
+            msg: 'Purchase successful using wallet balance',
+            couponCode: transactionId,
+            newBalance: buyer.earnings.total - buyer.earnings.withdrawn
+        });
     } catch (err) {
         await session.abortTransaction();
         console.error(err);

@@ -155,9 +155,9 @@ const Cart = () => {
     if (cartItems.length === 0) {
         return (
             <div className="container mx-auto px-6 py-24 text-center">
-                <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter mb-4">Your bag is empty</h2>
-                <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mb-12">System waiting for input</p>
-                <Link to="/" className="inline-block bg-slate-900 text-white px-10 py-4 rounded-xl font-black uppercase tracking-widest text-[11px] hover:bg-black transition-all">Start Shopping</Link>
+                <h2 className="text-4xl font-bold text-slate-900 mb-4">Your cart is empty</h2>
+                <p className="text-slate-400 text-sm mb-12">Add some items to get started</p>
+                <Link to="/" className="inline-block bg-slate-900 text-white px-10 py-4 rounded-xl font-bold uppercase tracking-widest text-[11px] hover:bg-black transition-all">Start Shopping</Link>
             </div>
         );
     }
@@ -165,13 +165,13 @@ const Cart = () => {
     return (
         <div className="bg-white min-h-screen pb-24">
             <div className="container mx-auto px-6 py-12 max-w-7xl">
-                <h1 className="text-5xl font-black text-slate-900 uppercase tracking-tighter mb-12">Shopping Bag</h1>
+                <h1 className="text-4xl font-bold text-slate-900 mb-12">My Cart</h1>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
                     <div className="lg:col-span-2 space-y-12">
                         {/* Cart Items */}
                         <div className="space-y-8">
-                            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] border-b border-slate-50 pb-4">Manifested Items</h2>
+                            <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-4">Items</h2>
                             {cartItems.map((item) => (
                                 <div key={item._id} className="flex gap-8 group pb-8 border-b border-slate-50 last:border-0">
                                     <div className="w-32 h-32 bg-slate-50 rounded-2xl flex-shrink-0 flex items-center justify-center p-4 border border-slate-100">
@@ -188,7 +188,7 @@ const Cart = () => {
                                                 <span className="text-sm font-black text-slate-900 w-8 text-center">{item.quantity}</span>
                                                 <button onClick={() => updateQuantity(item._id, item.quantity + 1)} className="text-slate-400 hover:text-slate-900 font-black">+</button>
                                             </div>
-                                            <button onClick={() => removeFromCart(item._id)} className="text-[10px] font-black text-red-300 hover:text-red-500 uppercase tracking-widest transition-colors">Terminate Item</button>
+                                            <button onClick={() => removeFromCart(item._id)} className="text-[10px] font-bold text-slate-400 hover:text-red-500 uppercase tracking-widest transition-colors">Remove</button>
                                         </div>
                                     </div>
                                 </div>
@@ -196,11 +196,11 @@ const Cart = () => {
                         </div>
 
                         {/* Shipping Address Section */}
-                        <div className="space-y-8 pt-8 border-t-2 border-slate-900">
+                        <div className="space-y-8 pt-8 border-t border-slate-100">
                             <div className="flex justify-between items-center">
                                 <div>
-                                    <h2 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.3em]">Shipping Protocol</h2>
-                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Select delivery destination</p>
+                                    <h2 className="text-lg font-bold text-slate-900">Delivery Address</h2>
+                                    <p className="text-xs text-slate-400 mt-1">Choose where to ship your order</p>
                                 </div>
                                 <button 
                                     onClick={() => { resetAddressForm(); setIsAddressModalOpen(true); }}
@@ -213,31 +213,28 @@ const Cart = () => {
                                 <div 
                                     key={addr._id}
                                     onClick={() => setSelectedAddressId(addr._id)}
-                                    className={`p-6 border-2 transition-all cursor-pointer relative group ${
+                                    className={`p-6 rounded-2xl border-2 transition-all cursor-pointer relative group ${
                                         selectedAddressId === addr._id 
-                                        ? 'border-slate-900 bg-white shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]' 
-                                        : 'border-slate-100 bg-white hover:border-slate-300'
+                                        ? 'border-slate-900 bg-white shadow-lg shadow-slate-100' 
+                                        : 'border-slate-100 bg-white hover:border-slate-200 shadow-sm'
                                     }`}
                                 >
                                     <div className="flex flex-col gap-1 pr-8">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className={`text-[8px] font-black px-2 py-0.5 uppercase tracking-widest ${
-                                                selectedAddressId === addr._id ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-400'
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                                                selectedAddressId === addr._id ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500'
                                             }`}>
                                                 {addr.name}
                                             </span>
                                             {selectedAddressId === addr._id && (
-                                                <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Priority Destination</span>
+                                                <span className="text-[10px] font-bold text-emerald-600">Selected</span>
                                             )}
                                         </div>
-                                        <span className="text-xs font-black text-slate-900 uppercase tracking-tight leading-tight">{addr.line1}</span>
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{addr.city}, {addr.state} - {addr.zipCode}</span>
+                                        <span className="text-sm font-bold text-slate-900 leading-tight">{addr.line1}</span>
+                                        <span className="text-xs text-slate-500">{addr.city}, {addr.state} - {addr.zipCode}</span>
                                         
-                                        <div className="flex items-center gap-3 mt-4 pt-4 border-t border-dashed border-slate-100">
-                                            <div className="flex items-center gap-1.5">
-                                                <div className="w-1 h-1 rounded-full bg-slate-900"></div>
-                                                <span className="text-[9px] font-black text-slate-900 tracking-wider">TEL: {addr.phone}</span>
-                                            </div>
+                                        <div className="flex items-center gap-3 mt-4 pt-4 border-t border-slate-50">
+                                            <span className="text-xs font-medium text-slate-400">Phone: <span className="text-slate-900 font-bold">{addr.phone}</span></span>
                                         </div>
                                     </div>
 
@@ -258,12 +255,12 @@ const Cart = () => {
                                 </div>
                             ))}
                                 {addresses.length === 0 && (
-                                    <div className="col-span-full py-16 border-2 border-dashed border-slate-100 rounded-[2rem] flex flex-col items-center justify-center text-center">
-                                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] mb-6">No shipping profiles identified</p>
+                                    <div className="col-span-full py-16 border-2 border-dashed border-slate-100 rounded-3xl flex flex-col items-center justify-center text-center">
+                                        <p className="text-sm font-medium text-slate-400 mb-6">No addresses added yet</p>
                                         <button 
                                             onClick={() => setIsAddressModalOpen(true)}
-                                            className="px-8 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all"
-                                        >Initialize First Address</button>
+                                            className="px-8 py-3 bg-slate-900 text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-black transition-all"
+                                        >Add Address</button>
                                     </div>
                                 )}
                             </div>
@@ -271,54 +268,40 @@ const Cart = () => {
                     </div>
 
                 <div className="lg:col-span-1">
-                    <div className="bg-white border-2 border-slate-900 p-8 rounded-none shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] sticky top-24">
-                        <div className="flex items-center justify-between mb-8 pb-4 border-b-2 border-slate-100">
-                            <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.4em]">Order Manifest</h3>
-                            <div className="flex gap-1">
-                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Secure</span>
-                            </div>
+                    <div className="bg-slate-50 p-8 rounded-2xl sticky top-24">
+                        <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-200">
+                            <h3 className="text-lg font-bold text-slate-900">Summary</h3>
                         </div>
                         
                         <div className="space-y-6 mb-10">
-                            <div className="flex justify-between items-center group">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-slate-900 transition-colors">Bag Subtotal</span>
-                                <span className="font-mono text-sm font-black text-slate-900 tracking-tighter">₹{getCartTotal().toLocaleString()}</span>
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-slate-500">Subtotal</span>
+                                <span className="text-sm font-bold text-slate-900">₹{getCartTotal().toLocaleString()}</span>
                             </div>
                             
-                            <div className="flex justify-between items-center group">
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-slate-900 transition-colors">Logistics</span>
-                                    <span className="text-[8px] font-black text-emerald-500 uppercase tracking-[0.2em] mt-0.5">Priority Delivery</span>
-                                </div>
-                                <span className="font-mono text-sm font-black text-emerald-500 tracking-tighter">FREE</span>
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-slate-500">Shipping</span>
+                                <span className="text-sm font-bold text-emerald-600 uppercase tracking-widest text-[10px]">Free</span>
                             </div>
 
-                            {/* Technical Receipt Divider */}
-                            <div className="border-t border-dashed border-slate-200 my-4 relative">
-                                <div className="absolute -left-10 -top-1.5 w-3 h-3 bg-slate-50 rounded-full border border-slate-100"></div>
-                                <div className="absolute -right-10 -top-1.5 w-3 h-3 bg-slate-50 rounded-full border border-slate-100"></div>
-                            </div>
+                            {/* Divider */}
+                            <div className="border-t border-slate-200 my-6"></div>
                             
                             <div className="pt-2">
-                                <div className="flex justify-between items-end mb-2">
-                                    <span className="text-[12px] font-black text-slate-900 uppercase tracking-[0.3em]">Total Payable</span>
-                                    <span className="font-mono text-3xl font-black text-slate-900 tracking-tighter leading-none">
+                                <div className="flex justify-between items-center mb-6">
+                                    <span className="text-lg font-bold text-slate-900">Total</span>
+                                    <span className="text-3xl font-bold text-slate-900">
                                         ₹{getCartTotal().toLocaleString()}
                                     </span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Inclusive of all taxes</span>
-                                    <span className="text-[8px] font-black text-slate-900 bg-slate-100 px-2 py-0.5 uppercase tracking-widest">ENC: AES-256</span>
                                 </div>
                             </div>
                         </div>
 
                         {error && (
-                            <div className="mb-8 p-4 bg-red-50 border-l-4 border-red-500 text-red-600 rounded-none text-[10px] font-black uppercase tracking-wider leading-relaxed">
+                            <div className="mb-8 p-4 bg-red-50 border-l-4 border-red-500 text-red-600 text-xs font-medium">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"/></svg>
-                                    <span>Transaction Error</span>
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"/></svg>
+                                    <span>Error</span>
                                 </div>
                                 {error}
                             </div>
@@ -327,26 +310,19 @@ const Cart = () => {
                         <button 
                             onClick={handleCheckout}
                             disabled={loading}
-                            className="w-full group relative overflow-hidden"
+                            className="w-full"
                         >
-                            <div className="absolute inset-0 bg-slate-900 group-hover:translate-x-1 group-hover:translate-y-1 transition-transform duration-200"></div>
-                            <div className={`relative w-full py-5 border-2 border-slate-900 bg-slate-900 text-white group-hover:-translate-x-1 group-hover:-translate-y-1 transition-transform duration-200 flex items-center justify-center gap-3 ${loading ? 'opacity-50' : ''}`}>
-                                <span className="text-[11px] font-black uppercase tracking-[0.4em]">
-                                    {loading ? 'Processing...' : 'Authorize Payment'}
-                                </span>
+                            <div className={`w-full py-4 bg-slate-900 text-white rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-black transition-all flex items-center justify-center gap-3 ${loading ? 'opacity-50' : ''}`}>
+                                {loading ? 'Processing...' : 'Checkout Now'}
                                 {!loading && (
-                                    <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                                 )}
                             </div>
                         </button>
                         
-                        <div className="mt-8 pt-8 border-t border-slate-50 space-y-2">
-                            <div className="flex items-center gap-2">
-                                <svg className="w-3 h-3 text-slate-300" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"/></svg>
-                                <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest">SSL Secured Transaction</p>
-                            </div>
-                            <p className="text-[7px] text-slate-300 font-medium uppercase tracking-[0.1em] leading-relaxed">
-                                By authorizing payment, you confirm the manifest and accept all digital license agreements.
+                        <div className="mt-8 pt-8 border-t border-slate-200 space-y-2">
+                            <p className="text-[10px] text-slate-400 font-medium leading-relaxed">
+                                Secure checkout powered by Razorpay.
                             </p>
                         </div>
                     </div>

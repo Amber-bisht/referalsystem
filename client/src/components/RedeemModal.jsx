@@ -36,9 +36,8 @@ const RedeemModal = ({ isOpen, onClose, currentBalance, onRedeemSuccess }) => {
         setError('');
 
         try {
-            const res = await axios.post('/payment/withdraw', { 
-                amount: coupon.price,
-                brand: coupon.name 
+            const res = await axios.post('/payment/pay-with-wallet', { 
+                productId: coupon._id
             });
             
             setGeneratedCode(res.data.couponCode); // REAL CODE FROM BACKEND

@@ -197,22 +197,22 @@ const Dashboard = () => {
 
                             {/* Content */}
                             <div className="p-6 flex-1 flex flex-col">
-                                <div className="flex justify-between items-start mb-2 gap-2">
+                                <div className="flex justify-between items-start mb-1 gap-2">
                                     <h3 className="text-lg font-bold text-slate-900 tracking-tight leading-tight group-hover:text-slate-700 transition-colors">{product.name}</h3>
-                                    <span className="flex-shrink-0 px-2 py-0.5 bg-slate-50 border border-slate-100 text-slate-400 text-[9px] font-bold uppercase tracking-widest rounded-md">Game</span>
+                                    <span className="flex-shrink-0 px-2 py-0.5 bg-slate-50 border border-slate-100 text-slate-400 text-[9px] font-bold uppercase tracking-widest rounded-md">{product.category?.name || 'Game'}</span>
                                 </div>
                                 
-                                <p className="text-slate-500 text-xs font-medium leading-relaxed mb-6 line-clamp-2 h-8">
+                                <p className="text-slate-500 text-xs font-medium leading-relaxed mb-4 line-clamp-2 h-8">
                                     Safe and reliable delivery to your address.
                                 </p>
 
-                                <div className="mt-auto pt-6 border-t border-slate-50 flex flex-col gap-5">
-                                    <div className="flex flex-col gap-1.5">
-                                        <span className="text-3xl font-black text-slate-900 leading-none">₹{product.price.toLocaleString()}</span>
+                                <div className="mt-auto pt-4 border-t border-slate-50 flex flex-col gap-4">
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-3xl font-bold text-slate-900 leading-none">₹{product.price.toLocaleString()}</span>
                                         {product.originalPrice && product.originalPrice > product.price && (
                                             <div className="flex items-center gap-2">
                                                 <span className="text-[11px] text-slate-400 line-through font-bold decoration-slate-300">₹{product.originalPrice.toLocaleString()}</span>
-                                                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md shadow-sm">
+                                                <span className="text-[10px] font-bold text-white bg-red-500 px-2 py-0.5 rounded-md shadow-sm">
                                                     {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
                                                 </span>
                                             </div>
@@ -295,18 +295,18 @@ const Dashboard = () => {
 
                                     {/* Content */}
                                     <div className="p-6 flex-1 flex flex-col">
-                                        <div className="flex justify-between items-start mb-2 gap-2">
+                                        <div className="flex justify-between items-start mb-1 gap-2">
                                             <h3 className="text-lg font-bold text-slate-900 tracking-tight leading-tight group-hover:text-slate-700 transition-colors">{product.name}</h3>
-                                            <span className="flex-shrink-0 px-2 py-0.5 bg-slate-50 border border-slate-100 text-slate-400 text-[9px] font-bold uppercase tracking-widest rounded-md">Game</span>
+                                            <span className="flex-shrink-0 px-2 py-0.5 bg-slate-50 border border-slate-100 text-slate-400 text-[9px] font-bold uppercase tracking-widest rounded-md">{product.category?.name || 'Game'}</span>
                                         </div>
-                                        <p className="text-slate-500 text-xs font-medium leading-relaxed mb-6 line-clamp-2 h-8">Safe and reliable delivery to your address.</p>
-                                        <div className="mt-auto pt-6 border-t border-slate-50 flex flex-col gap-5">
-                                            <div className="flex flex-col gap-1.5">
-                                                <span className="text-3xl font-black text-slate-900 leading-none">₹{product.price.toLocaleString()}</span>
+                                        <p className="text-slate-500 text-xs font-medium leading-relaxed mb-4 line-clamp-2 h-8">Safe and reliable delivery to your address.</p>
+                                        <div className="mt-auto pt-4 border-t border-slate-50 flex flex-col gap-4">
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-3xl font-bold text-slate-900 leading-none">₹{product.price.toLocaleString()}</span>
                                                 {product.originalPrice && product.originalPrice > product.price && (
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-[11px] text-slate-400 line-through font-bold decoration-slate-300">₹{product.originalPrice.toLocaleString()}</span>
-                                                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md shadow-sm">
+                                                        <span className="text-[10px] font-bold text-white bg-red-500 px-2 py-0.5 rounded-md shadow-sm">
                                                             {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
                                                         </span>
                                                     </div>
