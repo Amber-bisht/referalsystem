@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -9,7 +10,7 @@ import Earnings from './pages/Earnings';
 import Referrals from './pages/Referrals';
 import MyPurchases from './pages/MyPurchases';
 import ProductDetail from './pages/ProductDetail';
-
+import Cart from './pages/Cart';
 import AdminDashboard from './pages/AdminDashboard';
 
 const ProtectedRoute = ({ children }) => {
@@ -25,8 +26,6 @@ const AdminRoute = ({ children }) => {
   if (!user || user.role !== 'admin') return <Navigate to="/" />;
   return children;
 };
-
-import { CartProvider } from './context/CartContext';
 
 const AppContent = () => {
     const location = useLocation();
@@ -60,14 +59,16 @@ const AppContent = () => {
                             <Referrals />
                         </ProtectedRoute>
                     } />
-import Cart from './pages/Cart';
-
                     <Route path="/cart" element={
                         <ProtectedRoute>
                             <Cart />
                         </ProtectedRoute>
                     } />
                     <Route path="/my-purchases" element={
+                        <ProtectedRoute>
+                            <MyPurchases />
+                        </ProtectedRoute>
+                    } />
 
                     {/* Global slug handler - must be last */}
                     <Route path="/:id" element={<ProductDetail />} />

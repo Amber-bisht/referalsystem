@@ -16,6 +16,10 @@ const withdrawSchema = z.object({
   brand: z.string().optional()
 });
 
+const payWithWalletSchema = z.object({
+  productId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid Product ID')
+});
+
 const createCartOrderSchema = z.object({
   items: z.array(z.object({
     productId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid Product ID'),
