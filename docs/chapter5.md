@@ -490,3 +490,186 @@ flowchart TD
    * Increments `earnings.total` by the calculated Level 2 earning.
    * Appends an earning ledger entry in `earningHistory` containing the buyer's email, the product name, the commission amount, the date, and the tag `level: 2`.
 7. **Ensure System Integrity**: To prevent database mismatches (such as crediting a user but failing to save the purchase record), all database operations are executed within a single transaction session. If any query fails, the session aborts and rolls back all database modifications to their original state.
+
+---
+
+## 5.6 Validation Checks
+
+Validation checks represent a critical layer of software design that guarantees input data conforms to the system's structural and operational constraints before any database write or transaction execution occurs. In the Referral E-Commerce System, validations are implemented on both the **client-side (React frontend)** for immediate user feedback and the **server-side (Express backend)** using **Zod validation schemas** and **Mongoose validation rules** to prevent malicious payload tampering and maintain database consistency.
+
+The five primary validation systems implemented across the MERN stack are analyzed below:
+
+```mermaid
+flowchart TD
+    subgraph Client Input
+        A[User Input Form]
+    end
+    subgraph Frontend Validations
+        B{Valid Email Regex?}
+        C{Password >= 6 chars?}
+    end
+    subgraph Backend API Gateways Zod & Controllers
+        D{Referral Code Exists & directReferrals < 8?}
+        E{Product Stock >= Quantity?}
+        F{Wallet Net Balance >= Withdrawal Amount?}
+    end
+    subgraph Database Store
+        G[(MongoDB Saved Documents)]
+    end
+
+    A --> B & C
+    B -- Yes --> D
+    C -- Yes --> D
+    D -- Yes --> E
+    E -- Yes --> F
+    F -- Yes --> G
+```
+
+### 5.6.1 Email Validation
+
+Email validation prevents users from registering with invalid email formats or duplicate accounts, securing the authentication system.
+
+1. **Client-Side Form Validation**:
+   In the user signup component (`Signup.jsx`), the dynamic input field restricts submission using native HTML5 attributes (`type="email"`) and a standard JavaScript Regular Expression (Regex).
+   * **Regex Syntax**: `/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/`
+   * **Purpose**: This ensures the presence of the `@` symbol, a valid domain name, and a standard domain suffix (e.g. `.com`, `.org`) before allowing the network signup request to be fired.
+
+2. **Server-Side API Schema Validation**:
+   The Express backend intercepts registration payloads using **Zod schema validation middleware**:
+   ```javascript
+   const registerSchema = z.object({
+       email: z.string().email({ message: "Invalid email format" }),
+       password: z.string().min(6)
+   });
+   ```
+   If a user bypasses the React UI and submits a direct POST request (e.g., using Postman) with a malformed email, the Zod parser immediately throws an HTTP `400 Bad Request` validation error, preventing processing.
+
+3. **Mongoose Database Constraints**:
+   At the database layer, the `User` Mongoose schema defines the email field with a native uniqueness index constraint:
+   ```javascript
+   email: { type: String, required: true, unique: true }
+   ```
+   When saving a new user record, MongoDB verifies that the email does not already exist in the indexed `users` collection. If a duplicate is submitted, Mongoose catches the duplicate key exception (`error.code === 11000`) and sends a clean user-facing error: `"User already exists with this email address."`
+
+### 5.6.2 Password Validation
+
+Password validation enforces basic credential complexity on creation and ensures secure mathematical encryption.
+
+1. **Client-Side Length Restraints**:
+   During registration, the interface binds password inputs to a state variable. If the user enters a password shorter than 6 characters, the signup button remains disabled, and a dynamic warning banner displays: `"Password must be at least 6 characters long."`
+
+2. **Backend Length Checks**:
+   On the server, Zod schemas double-check input width:
+   ```javascript
+   password: z.string().min(6, { message: "Password must be at least 6 characters" })
+   ```
+
+3. **Cryptographic Hashing Validation**:
+   Plaintext passwords are never saved. Prior to DB storage, Mongoose pre-save middlewares or controllers validate that the password payload is hashed using **bcryptjs**:
+   * **Mechanism**: Generates an algorithmic salt of 10 rounds and hashes the string:
+     ```javascript
+     const salt = await bcrypt.genSalt(10);
+     const hashedPassword = await bcrypt.hash(password, salt);
+     ```
+   * **Comparison Logic**: During login requests, the backend compares the input plaintext password with the saved bcrypt hash using:
+     ```javascript
+     const isMatch = await bcrypt.compare(inputPassword, user.password);
+     ```
+     This validation returns a boolean, allowing JWT generation only when credentials match perfectly.
+
+### 5.6.3 Referral Code Validation
+
+Referral code validations check referral codes, link direct parents, and enforce spillover width rules to prevent downline overflow.
+
+1. **Database Presence Validation**:
+   When a user registers with a referral code (e.g. `ref=ABC123D`), the `/api/auth/signup` controller first queries the `User` collection:
+   ```javascript
+   const referrer = await User.findOne({ referralCode: referralCode });
+   if (!referrer) {
+       return res.status(400).json({ message: "Invalid referral code" });
+   }
+   ```
+   If the code is invalid or the promoter does not exist, the registration fails, ensuring that no orphaned or broken referral branches are created.
+
+2. **Spillover Cap Validation (Width Cap of 8)**:
+   HNBGU guidelines require limiting the maximum width of a direct downline to 8 promoters. This prevents database bloat and controls commission networks. The validation checks the size of the referrer's `directReferrals` array:
+   ```javascript
+   if (referrer.directReferrals.length >= 8) {
+       return res.status(400).json({ message: "Referrer downline limit reached. Maximum of 8 direct referrals allowed." });
+   }
+   ```
+   Additionally, the `User` schema contains a built-in Mongoose array validator as a secondary defense layer:
+   ```javascript
+   validate: {
+       validator: function (val) {
+           return val.length <= 8;
+       },
+       message: 'Maximum of 8 direct referrals allowed.'
+   }
+   ```
+   This dual-level check prevents a 9th user from registering under the same promoter, redirecting them to register under an available downline node instead.
+
+### 5.6.4 Stock Validation
+
+Stock validation prevents "overselling" issues, ensuring checkout order balances match the actual physical catalog count in real-time.
+
+1. **Frontend Quantity Check**:
+   On the product details page (`ProductDetail.jsx`) and cart view (`Cart.jsx`), quantity selector input components compare user inputs against the product's available stock parameter:
+   ```javascript
+   const handleIncrement = () => {
+       if (quantity < product.stock) {
+           setQuantity(quantity + 1);
+       } else {
+           toast.warning("Cannot exceed available stock limit.");
+       }
+   };
+   ```
+
+2. **Server-Side API Checkout Validation**:
+   When a purchase API request is triggered, the Express backend verifies stock levels before communicating with the Razorpay API or the internal wallet payment engine:
+   ```javascript
+   const product = await Product.findById(productId);
+   if (!product) {
+       return res.status(404).json({ message: "Product not found" });
+   }
+   if (product.stock < quantity) {
+       return res.status(400).json({ message: "Insufficient product stock available." });
+   }
+   ```
+   If stock is sufficient, the backend initiates the payment order. During final validation (webhook signatures verification or wallet payment execution), the inventory stock value is deducted automatically inside the atomic database session:
+   ```javascript
+   product.stock -= quantity;
+   await product.save({ session });
+   ```
+   This ensures transaction safety and catalog synchronization.
+
+### 5.6.5 Withdrawal Balance Validation
+
+Withdrawal balance validation ensures that virtual digital wallets remain financially sound by preventing promoters from redeeming more funds than their net earnings balance.
+
+1. **Calculated Net Balance Validation**:
+   The promoter's net wallet balance is never hardcoded as a static database property to prevent synchronization lag. Instead, it is computed dynamically by the system using the formula:
+   $$\text{Net Wallet Balance} = \text{Total Accumulated Earnings} - \text{Withdrawn Earnings}$$
+   On both client dashboard listings and server check controllers, this calculation is used as the base truth.
+
+2. **Simulated Payout Verification**:
+   When a promoter requests a brand gift card redemption (e.g. Flipkart voucher for 500 INR), the withdrawal controller (`/api/payment/withdraw`) validates the request against the user's computed net balance:
+   ```javascript
+   const user = await User.findById(req.user.id);
+   const netBalance = user.earnings.total - user.earnings.withdrawn;
+   
+   if (amount <= 0) {
+       return res.status(400).json({ message: "Withdrawal amount must be greater than zero." });
+   }
+   if (amount > netBalance) {
+       return res.status(400).json({ message: "Insufficient wallet balance for this withdrawal." });
+   }
+   ```
+   Only when this validation succeeds does the system proceed to:
+   * Increment `user.earnings.withdrawn` by the requested withdrawal amount.
+   * Generate a secure, unique voucher coupon code (e.g. `FLP-8B7C91`).
+   * Push the coupon, brand, amount, and timestamp into the user's `withdrawalHistory` array.
+   * Save the updated user document to the database.
+
+This multi-phase validation scheme ensures that promoter accounts cannot bypass financial limits, guaranteeing absolute transactional integrity.
+

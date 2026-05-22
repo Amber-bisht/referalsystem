@@ -396,3 +396,232 @@ flowchart TD
 ```
 
 This clear, logical layout ensures that the calculation of direct and indirect rewards is executed safely and cleanly, preventing database anomalies and ensuring system stability.
+
+---
+
+## 2.9 Feasibility Study
+
+A feasibility study is an essential phase in the Software Development Life Cycle (SDLC). It determines whether the proposed Referral E-Commerce System is practical, cost-effective, and beneficial to develop within the given resource and time limits. This evaluation helps identify potential risks and obstacles before allocating substantial development resources. 
+
+For this project, the feasibility of the system was thoroughly evaluated across four key dimensions: **Technical Feasibility**, **Operational Feasibility**, **Economic (Cost) Feasibility**, and **Time Feasibility**.
+
+```mermaid
+mindmap
+  root((Feasibility Study))
+    Technical
+      MERN Stack Advantage
+      Razorpay Sandbox Integration
+      Unified JavaScript Engine
+    Operational
+      Intuitive Storefront & Cart
+      Dedicated Referral Dashboard
+      Admin Management Panel
+    Economic
+      Zero-cost Open-Source Stack
+      Free MongoDB Cloud Tier
+      No Proprietary Licenses
+    Time
+      8-Week Structured SDLC
+      Agile Incremental Sprints
+      Concurrent Module Dev
+```
+
+### 2.9.1 Technical Feasibility
+
+Technical feasibility evaluates whether the available hardware, software, and technology stack can support the development and operational requirements of the system. 
+
+The Referral E-Commerce System is built using the **MERN (MongoDB, Express.js, React.js, Node.js) stack**. This technology combination is highly feasible and suitable for this project due to the following reasons:
+
+1. **Unified JavaScript Stack**: By utilizing JavaScript for both frontend rendering (React) and backend services (Node.js/Express), the development overhead was significantly reduced. This unified language model allowed smooth, immediate transfer of data objects (JSON) without needing complex type-casting across boundaries.
+2. **Non-Blocking Node.js Server**: The asynchronous, single-threaded nature of Node.js is ideal for handling concurrent requests. In an e-commerce platform where multiple promoters copy referral links and customers browse the store simultaneously, Node.js handles input/output requests without resource bottlenecks.
+3. **Flexible Document Database**: MongoDB's schema-less document structure is extremely suitable for representational changes. Promoter hierarchies—such as the `directReferrals` array and recursive `referredBy` linkages—are represented naturally as JSON objects.
+4. **Third-Party Payment Sandboxing**: The integration of the official **Razorpay API** provides a highly secure and technically simple payment interface. By operating inside Razorpay’s free developer sandbox environment, the system utilizes real payment simulation without requiring commercial licenses, SSL certificates, or financial regulatory compliance.
+5. **Standard Client Requirements**: The frontend React app is lightweight and runs in any modern web browser. The server and database can run comfortably on standard, consumer-grade development laptops (e.g., dual-core processors with 8GB RAM), ensuring zero hardware constraints.
+
+Ultimately, because the developer had access to modern JavaScript modules, secure sandboxing interfaces, and standard workstation resources, the system is **highly technically feasible**.
+
+### 2.9.2 Operational Feasibility
+
+Operational feasibility assesses how well the developed software solves the target problem and how easily it will be adopted, operated, and maintained by its end users (customers, promoters, and administrators).
+
+The system was designed from the ground up to ensure maximum user friendliness and operational efficiency:
+
+1. **Intuitive Customer Storefront**: The storefront layout mirrors standard e-commerce websites (with category search tabs, dynamic shopping carts, and immediate checkout buttons). A customer requires zero technical training to complete a purchase.
+2. **Simplified Promoter Console**: Promoters are provided with a dedicated, secure dashboard showing their customized referral invitation link, downline grid, and transaction ledgers. With a single click, they can copy links, monitor their levels 1 and 2 referral trees, and see exactly where their wallet earnings originate.
+3. **Simulated Redemption Mechanics**: To keep operations lightweight, promoter redemptions are simulated via secure digital gift vouchers. Rather than dealing with bank transfers and complex compliance, promoters instantly generate brand coupons (like Amazon or Flipkart), allowing immediate, automated gratification.
+4. **Comprehensive Admin Control**: The admin dashboard gives system managers full visibility. Admins can audit all orders, update shipping states, modify product parameters (pricing, active stock, referral percentages), and view global financial stats.
+5. **No System Training Overhead**: The entire platform operates in standard web browsers, making it accessible on mobile devices and desktops alike. Users require no external manuals or dedicated instruction, making the platform **100% operationally feasible**.
+
+### 2.9.3 Economic (Cost) Feasibility
+
+Economic feasibility determines whether the financial benefits of the system justify the development and maintenance costs. In a university project environment, economic feasibility focuses on minimizing development overhead while ensuring maximum system stability.
+
+The Referral E-Commerce System is **exceptionally cost-feasible** because it was developed entirely using free, open-source software and developer-tier cloud services:
+
+| Component | Software / Resource | Development Cost | Production License Cost |
+| :--- | :--- | :--- | :--- |
+| **Development IDE** | Visual Studio Code | 0 INR (Open Source) | 0 INR (Free) |
+| **Frameworks** | React.js, Express.js, Node.js | 0 INR (MIT License) | 0 INR (Free) |
+| **Database** | MongoDB (Local Community Server / Atlas Free Tier) | 0 INR (Free Tier) | 0 INR (Up to 512MB free) |
+| **Styling** | Tailwind CSS / Vanilla CSS | 0 INR (Open Source) | 0 INR (Free) |
+| **Payment Gateway** | Razorpay SDK (Sandbox Test Environment) | 0 INR (Free Sandbox) | Transaction-based (No upfront cost) |
+| **Testing Client** | Postman Client | 0 INR (Free Tier) | 0 INR (Free) |
+| **Version Control** | GitHub | 0 INR (Free Public/Private repos) | 0 INR (Free) |
+
+* **Zero Cash Outlay**: The actual development of this system incurred **zero cost** for licensing. All tools, databases, package dependencies (like `bcryptjs` and `jsonwebtoken`), and IDE software are completely free.
+* **Low Hosting Barriers**: For small-scale testing and academic viva demonstrations, the entire platform is hosted locally on the developer's laptop (Port `5173` for React and Port `5000` for Express). If cloud deployment is needed, the system can be deployed onto free/low-cost platforms (like Vercel for frontend, Render for backend, and MongoDB Atlas for database), keeping operational costs negligible.
+
+Thus, the economic analysis confirms that the project delivers high functional value at a development cost of zero, proving it is **fully economically feasible**.
+
+### 2.9.4 Time Feasibility
+
+Time feasibility evaluates whether the project can be planned, designed, coded, tested, and documented within the academic deadline. The total developmental timeline for the Referral E-Commerce System was mapped over a structured **8-week academic schedule** using the **Agile/Incremental SDLC model**.
+
+```mermaid
+gantt
+    title Development Timeline (8-Week SDLC Schedule)
+    dateFormat  X
+    axisFormat %d
+    
+    section Phase 1
+    Requirements & Architecture :active, 0, 7
+    section Phase 2
+    Database setup & Auth APIs  : 7, 18
+    section Phase 3
+    Storefront & Shopping Cart : 18, 28
+    section Phase 4
+    Razorpay & Wallet Engine : 28, 42
+    section Phase 5
+    Admin Control & Vouchers  : 42, 49
+    section Phase 6
+    Testing, Debugging & Thesis : 49, 56
+```
+
+The developmental sprints were organized as follows:
+* **Week 1 (Requirements Analysis and Interface Mockups)**: Gathering system goals, sketching UI dashboards, and designing the database Entity-Relationship schema.
+* **Week 2 to 2.5 (Database Setup and Authentication Core)**: Configuring Mongoose models, establishing MongoDB local storage, coding user signup/login APIs, and creating JWT route guards.
+* **Week 2.5 to 4 (Core Storefront and Shopping Cart)**: Building category department listings, dynamic cart components, and shipping address managers.
+* **Week 4 to 6 (Payment Integration and Referral Calculations)**: Integrating Razorpay payment sheets, checking HMAC signatures, and implementing the Level 1 and Level 2 database transaction commission credits.
+* **Week 6 to 7 (Admin Dashboard and Redemptions)**: Designing the admin console interface, and generating simulated Amazon/Flipkart voucher codes.
+* **Week 8 (Testing, Bug Resolution, and Documentation)**: Performing system-wide tests (including the 8-referral spillover cap), resolving cart inventory bugs, and compiling the final thesis report.
+
+By dividing the application into standalone, modular sprints and developing APIs and React layouts in parallel, the developer successfully prevented bottlenecks. The project was completed on schedule, confirming that it is **entirely time feasible**.
+
+---
+
+## 2.10 Data Dictionary and Decision Tables
+
+System analysis and design requires the construction and evaluation of data catalogs and logical decision matrices. These tools ensure that database constraints are fully documented and backend routing decisions are mathematically consistent. 
+
+To satisfy the academic project report criteria, this section provides the formal **Data Dictionary** for the database collections and the **Decision Tables** governing the system's core business logic.
+
+### 2.10.1 Data Dictionary
+
+A Data Dictionary acts as a centralized metadata repository that defines the exact structure, data types, keys, and validation rules for each attribute stored in the database. Since the system utilizes **MongoDB** (a document-oriented database), data structures are stored as flexible documents. Mongoose schemas enforce structural constraints at the application layer.
+
+The data dictionaries for the three primary collections—**Users**, **Products**, and **Orders**—are detailed below:
+
+#### 1. Users Collection Data Dictionary (`users`)
+
+This collection stores promoter profiles, encrypted credentials, referral tree linkages, dynamic wallets balances, and embedded transaction sub-schemas (addresses and withdrawal logs).
+
+| Field Attribute Name | Data Type | Key / Constraint | Validation / Defaults | Operational Description |
+| :--- | :---: | :---: | :--- | :--- |
+| `_id` | ObjectId | Primary Key | Auto-generated by MongoDB | Unique identifier for the user document. |
+| `email` | String | Unique Index | Required, unique, email regex check | Primary user email address used for login. |
+| `password` | String | None | Required, encrypted using bcryptjs | Securely hashed user credentials. |
+| `referralCode` | String | Unique Index | Required, generated automatically | Unique code shared by user to refer others. |
+| `referredBy` | ObjectId | Foreign Key | Default: `null`, references: `users` | Identifies the Level 1 parent who referred this user. |
+| `directReferrals` | Array | None | Default: `[]`, Max items: 8 (Spillover Cap) | Array of ObjectIds of users referred directly. |
+| `role` | String | None | Default: `'user'`, Enum: `['user', 'admin']` | Controls access permissions for admin routes. |
+| `earnings.direct` | Number | None | Default: `0`, Minimum: 0 | Total commissions earned from direct signups. |
+| `earnings.indirect` | Number | None | Default: `0`, Minimum: 0 | Total commissions earned from level 2 downlines. |
+| `earnings.total` | Number | None | Default: `0`, Minimum: 0 | Cumulative commissions accumulated historically. |
+| `earnings.withdrawn` | Number | None | Default: `0`, Minimum: 0 | Total funds redeemed for brand vouchers. |
+| `addresses` | Array | Sub-document | Default: `[]`, Embedded schema | Dynamic list of saved delivery locations. |
+| `purchaseHistory` | Array | Sub-document | Default: `[]`, Embedded schema | Chronological list of user purchases. |
+| `earningHistory` | Array | Sub-document | Default: `[]`, Embedded schema | Detailed commission credit receipts index. |
+| `withdrawalHistory` | Array | Sub-document | Default: `[]`, Embedded schema | History of generated gift coupon codes. |
+
+#### 2. Products Collection Data Dictionary (`products`)
+
+This collection manages the e-commerce inventory catalog, including pricing rules and promoters reward rates.
+
+| Field Attribute Name | Data Type | Key / Constraint | Validation / Defaults | Operational Description |
+| :--- | :---: | :---: | :--- | :--- |
+| `_id` | ObjectId | Primary Key | Auto-generated by MongoDB | Unique identifier for the product document. |
+| `name` | String | None | Required, String format | Display name of the product. |
+| `slug` | String | Unique Index | Required, URL-safe slug | Path coordinate used for clean storefront routing. |
+| `price` | Number | None | Required, Minimum: 0 | Active selling price of the item. |
+| `originalPrice` | Number | None | Optional, Minimum: 0 | Original strike-out price shown during sales. |
+| `commissionPercentage`| Number | None | Required, Default: `10`, Range: `1` to `50` | Referral commission percentage (dynamic). |
+| `description` | String | None | Optional, detailed text | Marketing and feature description. |
+| `imageUrl` | String | None | Required, URL string | Path to storefront product thumbnail. |
+| `category` | ObjectId | Foreign Key | References: `categories` | Links product to specific classification. |
+| `stock` | Number | None | Default: `0`, Minimum: 0 | Available physical inventory quantity. |
+
+#### 3. Orders Collection Data Dictionary (`orders`)
+
+This collection logs successful customer checkouts and handles shipping statuses.
+
+| Field Attribute Name | Data Type | Key / Constraint | Validation / Defaults | Operational Description |
+| :--- | :---: | :---: | :--- | :--- |
+| `_id` | ObjectId | Primary Key | Auto-generated by MongoDB | Unique identifier for the order document. |
+| `user` | ObjectId | Foreign Key | Required, references: `users` | Buyers database account linkage. |
+| `product` | ObjectId | Foreign Key | Required, references: `products` | Product item purchased. |
+| `productName` | String | None | Required, matches active product | Text copy of product name at purchase time. |
+| `amount` | Number | None | Required, Minimum: 0 | Total checkout transaction cost. |
+| `quantity` | Number | None | Default: `1`, Minimum: 1 | Number of items purchased. |
+| `paymentMethod` | String | None | Required, Enum: `['Razorpay', 'Wallet']` | Selected financial transactional gateway. |
+| `paymentId` | String | None | Optional (Razorpay only) | Reference transaction ID returned by Razorpay. |
+| `razorpayOrderId` | String | None | Optional (Razorpay only) | Native Razorpay order session identifier. |
+| `status` | String | None | Default: `'Confirmed'`, Enum: see list | Shipping lifecycle state: Confirmed, Processing, etc. |
+| `shippingAddress` | String | None | Required, detailed text | Selected delivery destination address. |
+| `phoneNumber` | String | None | Required, contact number | Delivery phone number inputted during checkout. |
+
+---
+
+### 2.10.2 Decision Tables
+
+A Decision Table is a tabular logic matrix used to design and evaluate complex system decisions. It maps all possible input conditions against the appropriate system actions, ensuring that backend algorithms handle edge-cases cleanly without logic gaps.
+
+#### 1. Referral Signup Routing Decision Table
+
+This table governs user registration routing based on whether a referral code is provided, whether the code exists in MongoDB, and whether the referrer has reached their maximum downline width limit of 8.
+
+| Conditions | Rule 1 | Rule 2 | Rule 3 | Rule 4 |
+| :--- | :---: | :---: | :---: | :---: |
+| **Referral code provided?** | No | Yes | Yes | Yes |
+| **Referral code exists in database?** | N/A | No | Yes | Yes |
+| **Referrer downline width < 8?** | N/A | N/A | No | Yes |
+| **Actions** | | | | |
+| *Reject registration (invalid code error)* | **X** | | | |
+| *Reject registration (spillover cap error)* | | | **X** | |
+| *Create standard user account (no referrer)* | **X** | | | |
+| *Create referred user account (bind parent)*| | | | **X** |
+
+* **Rule 1**: The user registers directly. The system bypasses all checks and saves the user record with `referredBy: null`.
+* **Rule 2**: A referral code is inputted but not found in MongoDB. The registration fails immediately, and an error is sent to the user: `"Invalid Referral Code"`.
+* **Rule 3**: The referral code is valid, but the referrer's downline array already holds 8 active users. The system rejects the registration, throwing a spillover exception: `"Referrer downline limit reached."`
+* **Rule 4**: The referral code is valid, and the referrer has space. The system creates the account, links the user's `referredBy` parameter to the parent, and pushes the new user's ID into the parent's `directReferrals` array.
+
+#### 2. Checkout Payout Logic Decision Table
+
+This table governs transaction handling and the automated calculation and distribution of direct (Level 1) and indirect (Level 2) commissions upon checkout verification.
+
+| Conditions | Rule 1 | Rule 2 | Rule 3 | Rule 4 |
+| :--- | :---: | :---: | :---: | :---: |
+| **Payment signature/checkout verified?**| No | Yes | Yes | Yes |
+| **Buyer has a direct Parent (Level 1)?** | N/A | No | Yes | Yes |
+| **Parent has a grandparent (Level 2)?** | N/A | N/A | No | Yes |
+| **Actions** | | | | |
+| *Abort transaction & throw error* | **X** | | | |
+| *Process order, distribute 0 commission* | | **X** | | |
+| *Process order, credit Level 1 parent* | | | **X** | |
+| *Process order, credit both L1 & L2 nodes*| | | | **X** |
+
+* **Rule 1**: The payment signature check fails (Razorpay checksum mismatch or insufficient wallet balance). The server aborts the checkout transaction instantly. No orders or stock deductions occur.
+* **Rule 2**: The buyer completes payment but registered directly (no referrer). The system processes the order, reduces catalog inventory stock, and saves the purchase log, but distributes no commissions.
+* **Rule 3**: The buyer completes payment and has a Level 1 parent, but the parent has no grandparent. The system processes the order, computes Level 1 commission ($P \times C\%$), and credits the parent's wallet and history. No further actions are taken.
+* **Rule 4**: The buyer completes payment, and both Level 1 and Level 2 parent referrers are present in the upline tree. The system credits the Level 1 parent with the direct commission and credits the Level 2 grandparent with their 10% indirect commission share atomically.
+
